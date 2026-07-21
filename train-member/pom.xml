@@ -19,8 +19,8 @@
     <dependencies>
         <!-- Spring Web (你勾选的) -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>com.xzit</groupId>
+            <artifactId>common</artifactId>
         </dependency>
         <!-- DevTools 热部署 (你勾选的) -->
         <dependency>
@@ -29,18 +29,10 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-        <!-- Cloud Bootstrap (你勾选的，让 bootstrap.yml 生效) -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- 测试 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
