@@ -2,3 +2,10 @@ server:
   port: 8001
   servlet:
     context-path: "/member"
+spring:
+  datasource:
+    username: train
+    password: 123456
+    url: jdbc:mysql://127.0.0.1:3306/train?characterEncoding=UTF8&autoReconnect=true&serverTimezone=Asia/Shanghai
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
