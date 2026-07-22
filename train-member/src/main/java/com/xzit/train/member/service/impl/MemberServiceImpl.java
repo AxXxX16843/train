@@ -1,5 +1,7 @@
 package com.xzit.train.member.service.impl;
 
+import com.xzit.train.common.exception.BusinessException;
+import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.member.domain.Member;
 import com.xzit.train.member.domain.MemberExample;
 import com.xzit.train.member.mapper.MemberMapper;
@@ -27,11 +29,11 @@ public class MemberServiceImpl implements MemberService {
         memberExample.createCriteria().andMobileEqualTo(mobile);
         List<Member> members = memberMapper.selectByExample(memberExample);
         if(!members.isEmpty()){
-            throw new RuntimeException("用户已经存在");
+            throw new BusinessException(BusinessExpectionEnum.MOBILE_IS_EXIST);
         }
         Member member = new Member();
         member.setMobile(mobile);
-        member.setId(System.currentTimeMillis());
+        member.setId(1L);
         memberMapper.insert(member);
         return member.getId();
     }
