@@ -2,13 +2,16 @@ package com.xzit.train.member.service.impl;
 
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
+import com.xzit.train.common.util.SnowUtil;
 import com.xzit.train.member.domain.Member;
 import com.xzit.train.member.domain.MemberExample;
 import com.xzit.train.member.mapper.MemberMapper;
 import com.xzit.train.member.req.MemberRequest;
 import com.xzit.train.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.stereotype.Service;
+import cn.hutool.core.util.IdUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +36,7 @@ public class MemberServiceImpl implements MemberService {
         }
         Member member = new Member();
         member.setMobile(mobile);
-        member.setId(1L);
+        member.setId(SnowUtil.getSnowflakeNextId());
         memberMapper.insert(member);
         return member.getId();
     }

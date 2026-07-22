@@ -1,6 +1,7 @@
 package com.xzit.train.member.domain;
 
 public class Member {
+
     private Long id;
 
     private String mobile;
