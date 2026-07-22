@@ -6,6 +6,7 @@ import cn.hutool.core.util.RandomUtil;
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
+import com.xzit.train.common.util.JwtUtil;
 import com.xzit.train.common.util.SnowUtil;
 import com.xzit.train.member.domain.Member;
 import com.xzit.train.member.domain.MemberExample;
@@ -72,6 +73,7 @@ public class MemberServiceImpl implements MemberService {
         }
         MemberLoginResp resp = new MemberLoginResp();
         BeanUtil.copyProperties(members, resp);
+        resp.setToken(JwtUtil.createToken(resp.getId(),resp.getMobile()));
         return new CommonResp<>(resp);
     }
 

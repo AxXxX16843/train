@@ -1,9 +1,14 @@
 package com.xzit.train.member.resp;
 
+import lombok.Data;
+
+@Data
 public class MemberLoginResp {
     private Long id;
 
     private String mobile;
+
+    private String token;
 
     public Long getId() {
         return id;
