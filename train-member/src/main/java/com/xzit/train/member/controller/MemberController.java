@@ -9,10 +9,7 @@ import com.xzit.train.member.service.MemberService;
 import com.xzit.train.member.service.impl.MemberServiceImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping
@@ -32,11 +29,11 @@ public class MemberController {
         return commonResp;
     }
     @PostMapping("send-code")
-    public CommonResp<Long> sendCode(@Valid SendCodeReq req){
+    public CommonResp<Long> sendCode(@Valid @RequestBody SendCodeReq req){
         return memberService.sendCode(req);
     }
     @PostMapping("login")
-    public CommonResp<MemberLoginResp> login(@Valid MemberLoginReq req){
+    public CommonResp<MemberLoginResp> login(@Valid @RequestBody MemberLoginReq req){
         return memberService.login(req);
     }
 

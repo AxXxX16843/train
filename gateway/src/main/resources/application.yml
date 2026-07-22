@@ -9,3 +9,11 @@ spring:
           #          uri: ib://member
           predicates:
             - Path=/member/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedHeaders: "*"
+            allowedMethods: "*"
+            allowCredentials: true
+            maxAge: 3600

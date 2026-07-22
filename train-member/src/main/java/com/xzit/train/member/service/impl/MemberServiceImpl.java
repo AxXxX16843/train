@@ -50,7 +50,7 @@ public class MemberServiceImpl implements MemberService {
     public CommonResp<Long> sendCode(SendCodeReq req) {
         String mobile = req.getMobile();
         Member members = getMember(mobile);
-        if(!ObjectUtil.isNull(members)){
+        if(ObjectUtil.isNull(members)){
             Member member = new Member();
             member.setMobile(mobile);
             member.setId(SnowUtil.getSnowflakeNextId());
