@@ -3,7 +3,9 @@ package com.xzit.train.common.exception;
 import lombok.Data;
 
 public enum BusinessExpectionEnum {
-    MOBILE_IS_EXIST("该用户已存在");
+    MOBILE_IS_EXIST("该用户已存在"),
+    MOBILE_IS_NOT_REGISTRY("该手机号未注册"),
+    CODE_ERROR("验证码错误");
     private String desc;
 
     public String getDesc() {
