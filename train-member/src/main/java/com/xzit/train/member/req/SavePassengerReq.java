@@ -12,11 +12,11 @@ import java.util.Date;
 @AllArgsConstructor
 public class SavePassengerReq {
     private Long id;
-    @NotNull(message = "用户id不能为空")
+
     private Long memberId;
     @NotBlank(message = "姓名不能为空")
     private String name;
-    @NotBlank(message = "姓名不能为空")
+    @NotBlank(message = "身份证号不能为空")
     private String idCard;
     @NotBlank(message = "姓名不能为空")
     private String type;

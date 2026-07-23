@@ -1,75 +1,51 @@
 <template>
-  <a-layout-sider width="200" style="background: #fff">
-    <a-menu
-        v-model:selectedKeys="selectedKeys2"
-        v-model:openKeys="openKeys"
-        mode="inline"
-        style="height: 100%"
-    >
-      <a-sub-menu key="sub1">
-        <template #title>
-                <span>
-                  <user-outlined />
-                  subnav 1
-                </span>
-        </template>
-        <a-menu-item key="1">option1</a-menu-item>
-        <a-menu-item key="2">option2</a-menu-item>
-        <a-menu-item key="3">option3</a-menu-item>
-        <a-menu-item key="4">option4</a-menu-item>
-      </a-sub-menu>
-      <a-sub-menu key="sub2">
-        <template #title>
-                <span>
-                  <laptop-outlined />
-                  subnav 2
-                </span>
-        </template>
-        <a-menu-item key="5">option5</a-menu-item>
-        <a-menu-item key="6">option6</a-menu-item>
-        <a-menu-item key="7">option7</a-menu-item>
-        <a-menu-item key="8">option8</a-menu-item>
-      </a-sub-menu>
-      <a-sub-menu key="sub3">
-        <template #title>
-                <span>
-                  <notification-outlined />
-                  subnav 3
-                </span>
-        </template>
-        <a-menu-item key="9">option9</a-menu-item>
-        <a-menu-item key="10">option10</a-menu-item>
-        <a-menu-item key="11">option11</a-menu-item>
-        <a-menu-item key="12">option12</a-menu-item>
-      </a-sub-menu>
+  <a-layout-sider width="200" class="sider">
+    <div class="sider-title">12306 售票系统</div>
+    <a-menu v-model:selectedKeys="selectedKeys" mode="inline">
+      <a-menu-item key="/welcome">
+        <router-link to="/welcome">
+          <home-outlined /> 首页
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="/passenger">
+        <router-link to="/passenger">
+          <team-outlined /> 乘车人管理
+        </router-link>
+      </a-menu-item>
     </a-menu>
   </a-layout-sider>
 </template>
 
 <script>
-import {defineComponent, ref, watch} from 'vue';
+import { defineComponent, ref, watch } from 'vue';
 import router from "@/router";
-import {LaptopOutlined, NotificationOutlined, UserOutlined} from "@ant-design/icons-vue";
 
 export default defineComponent({
   name: "the-sider-view",
-  components: {NotificationOutlined, UserOutlined, LaptopOutlined},
   setup() {
     const selectedKeys = ref([]);
 
     watch(() => router.currentRoute.value.path, (newValue) => {
-      console.log('watch', newValue);
-      selectedKeys.value = [];
-      selectedKeys.value.push(newValue);
-    }, {immediate: true});
-    return {
-      selectedKeys
-    };
+      selectedKeys.value = [newValue];
+    }, { immediate: true });
+
+    return { selectedKeys };
   },
 });
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
+.sider {
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+}
+.sider-title {
+  height: 64px;
+  line-height: 64px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #001529;
+  border-bottom: 1px solid #f0f0f0;
+}
 </style>

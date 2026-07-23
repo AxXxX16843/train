@@ -1,50 +1,68 @@
 <template>
   <a-layout-header class="header">
-    <div class="logo" />
-    <div style="float: right; color: white;">
-      您好：{{member.mobile}} &nbsp;&nbsp;
-      <router-link to="/login" style="color: white;">
-        退出登录
+    <div class="header-right">
+      您好，{{ member.mobile }}
+      <router-link to="/login" class="logout-link">
+        <logout-outlined /> 退出
       </router-link>
     </div>
     <a-menu
-        v-model:selectedKeys="selectedKeys1"
+        v-model:selectedKeys="selectedKeys"
         theme="dark"
         mode="horizontal"
-        :style="{ lineHeight: '64px' }"
     >
-      <a-menu-item key="1">nav 1</a-menu-item>
-      <a-menu-item key="2">nav 2</a-menu-item>
-      <a-menu-item key="3">nav 3</a-menu-item>
+      <a-menu-item key="/welcome">
+        <router-link to="/welcome">
+          <home-outlined /> 首页
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="/passenger">
+        <router-link to="/passenger">
+          <team-outlined /> 乘车人管理
+        </router-link>
+      </a-menu-item>
     </a-menu>
-
   </a-layout-header>
 </template>
 
 <script>
-import {defineComponent, ref, watch} from 'vue';
+import { defineComponent, ref, watch } from 'vue';
 import store from "@/store";
-import router from '@/router'
+import router from '@/router';
 
 export default defineComponent({
   name: "the-header-view",
   setup() {
-    let member = store.state.member;
+    const member = store.state.member;
     const selectedKeys = ref([]);
 
     watch(() => router.currentRoute.value.path, (newValue) => {
-      console.log('watch', newValue);
-      selectedKeys.value = [];
-      selectedKeys.value.push(newValue);
-    }, {immediate: true});
-    return {
-      member,
-      selectedKeys
-    };
+      selectedKeys.value = [newValue];
+    }, { immediate: true });
+
+    return { member, selectedKeys };
   },
 });
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.header {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+.header-right {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  white-space: nowrap;
+}
+.logout-link {
+  color: rgba(255, 255, 255, 0.65);
+  margin-left: 16px;
+  font-size: 13px;
+}
+.logout-link:hover {
+  color: #fff;
+}
 </style>

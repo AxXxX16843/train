@@ -5,7 +5,9 @@ import lombok.Data;
 public enum BusinessExpectionEnum {
     MOBILE_IS_EXIST("该用户已存在"),
     MOBILE_IS_NOT_REGISTRY("该手机号未注册"),
-    CODE_ERROR("验证码错误");
+    CODE_ERROR("验证码错误"),
+    PASSENGER_IS_EXIST("乘客已经存在不可重复添加"),
+    LIST_IS_NULL("请先选中要删除的乘客");
     private String desc;
 
     public String getDesc() {
