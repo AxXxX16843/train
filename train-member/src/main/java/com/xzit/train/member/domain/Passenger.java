@@ -1,5 +1,7 @@
 package com.xzit.train.member.domain;
 
+import lombok.experimental.FieldDefaults;
+
 import java.util.Date;
 
 public class Passenger {
@@ -12,7 +14,7 @@ public class Passenger {
     private String idCard;
 
     private String type;
-
+    
     private Date createTime;
 
     private Date updateTime;
