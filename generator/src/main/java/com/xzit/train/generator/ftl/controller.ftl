@@ -21,7 +21,6 @@ public class ${Domain}Controller {
     @Autowired
     private ${Domain}Service ${domain}Service;
 
-
     @PostMapping("save")
     public CommonResp<Object> save(@Valid @RequestBody Save${Domain}Req req) {
         return ${domain}Service.save(req);

@@ -11,9 +11,7 @@ import org.dom4j.io.SAXReader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServerGenerator {
     static String servicePath = "train-member\\src\\main\\java\\com\\xzit\\train\\[module]\\";
@@ -47,19 +45,28 @@ public class ServerGenerator {
         String do_main= tableName.getText().replaceAll("_","-");
         String tableComment = DbUtil.getTableComment(tableName.getText());
         List<Field> fieldList = DbUtil.getColumnByTableName(tableName.getText());
+        Set<String> javaTypes = getJavaTypes(fieldList);
 
-
+//组装参数
         Map<String,Object> param=new HashMap<>();
+        param.put("module",module);
         param.put("domain",domain);
         param.put("do_main",do_main);
         param.put("Domain",Domain);
+        param.put("tableNameCn",tableComment);
+        param.put("fieldList",fieldList);
+        param.put("typeSet",javaTypes);
         System.out.println(param);
-        gen(ModuleServicePath, Domain, param,"controller");
+        gen(ModuleServicePath, Domain, param,"saveReq","req");
+        gen(ModuleServicePath, Domain, param,"controller","controller");
+        gen(ModuleServicePath, Domain, param,"service","service");
+        gen(ModuleServicePath, Domain, param,"serviceImpl","service\\impl");
+
     }
 
-    private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target) throws IOException, TemplateException {
+    private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target,String packageName) throws IOException, TemplateException {
         FreemarkerUtil.initConfig(target+".ftl");
-        String toPath=ModuleServicePath+camelToSlash(target)+"\\";
+        String toPath=ModuleServicePath+packageName+"\\";
         new File(toPath).mkdirs();
         System.out.println(toPath);
         String Target= target.substring(0,1).toUpperCase()+target.substring(1);
@@ -67,14 +74,6 @@ public class ServerGenerator {
         System.out.println(fileName);
         FreemarkerUtil.generator(fileName, param);
     }
-    public static String camelToSlash(String camelStr) {
-        if (camelStr == null || camelStr.isEmpty()) {
-            return camelStr;
-        }
-        // 在大写字母前添加 / ，之后整体转小写
-        return camelStr.replaceAll("([A-Z])", "/$1").toLowerCase();
-    }
-
 
     private static String getGeneratorPath() throws DocumentException {
         SAXReader reader = new SAXReader();
@@ -85,6 +84,14 @@ public class ServerGenerator {
         Node node = document.selectSingleNode("//pom:configurationFile");
         System.out.println(node.getText());
         return node.getText();
+    }
+    public static Set<String> getJavaTypes(List<Field> fieldList) {
+
+        Set<String> set = new HashSet<>();
+        for (Field field : fieldList) {
+            set.add(field.getJavaType());
+        }
+        return set;
     }
 }
 

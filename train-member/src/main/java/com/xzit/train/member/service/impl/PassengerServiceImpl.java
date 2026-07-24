@@ -14,8 +14,8 @@ import com.xzit.train.common.util.SnowUtil;
 import com.xzit.train.member.domain.Passenger;
 import com.xzit.train.member.domain.PassengerExample;
 import com.xzit.train.member.mapper.PassengerMapper;
-import com.xzit.train.member.req.QueryListReq;
-import com.xzit.train.member.req.SavePassengerReq;
+import com.xzit.train.member.req.PassengerQueryReq;
+import com.xzit.train.member.req.PassengerSaveReq;
 import com.xzit.train.member.resp.PassengerQueryResp;
 import com.xzit.train.member.service.PassengerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class PassengerServiceImpl implements PassengerService {
     private PassengerMapper passengerMapper;
 
     @Override
-    public CommonResp<Object> save(SavePassengerReq req) {
+    public CommonResp<Object> save(PassengerSaveReq req) {
         Long memberId = MemberContext.getMember().getId();
         DateTime now = DateTime.now();
         PassengerExample passengerExample = new PassengerExample();
@@ -50,7 +50,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
-    public CommonResp<PageResp<PassengerQueryResp>> queryList(QueryListReq req) {
+    public CommonResp<PageResp<PassengerQueryResp>> queryList(PassengerQueryReq req) {
         Long memberId = req.getId();
         PassengerExample passengerExample = new PassengerExample();
         PassengerExample.Criteria criteria = passengerExample.createCriteria();
@@ -68,7 +68,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
-    public CommonResp<Object> modify(SavePassengerReq req) {
+    public CommonResp<Object> modify(PassengerSaveReq req) {
         DateTime now = DateTime.now();
         Passenger passenger = new Passenger();
         BeanUtil.copyProperties(req, passenger);
