@@ -1,18 +1,18 @@
-package com.xzit.train.member.service;
+package com.xzit.train.${module}.service;
 
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
-import com.xzit.train.member.req.QueryListReq;
-import com.xzit.train.member.req.Save${Domain}Req;
-import com.xzit.train.member.resp.${Domain}QueryResp;
+import com.xzit.train.${module}.req.${Domain}QueryReq;
+import com.xzit.train.${module}.req.${Domain}SaveReq;
+import com.xzit.train.${module}.resp.${Domain}QueryResp;
 
 public interface ${Domain}Service {
 
-    CommonResp<Object> save(Save${Domain}Req req);
+    CommonResp<Object> save(${Domain}SaveReq req);
 
-    CommonResp<PageResp<${Domain}QueryResp>> queryList(QueryListReq req);
+    CommonResp<PageResp<${Domain}QueryResp>> queryList(${Domain}QueryReq req);
 
-    CommonResp<Object> modify(Save${Domain}Req req);
+    CommonResp<Object> modify(${Domain}SaveReq req);
 
     CommonResp<Object> delete(String ids);
 }
