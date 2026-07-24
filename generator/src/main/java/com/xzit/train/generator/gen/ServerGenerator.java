@@ -58,7 +58,7 @@ public class ServerGenerator {
         param.put("typeSet",javaTypes);
         System.out.println(param);
         gen(ModuleServicePath, Domain, param,"saveReq","req");
-        gen(ModuleServicePath, Domain, param,"adminController","admin\\controller");
+        gen(ModuleServicePath, Domain, param,"adminController","controller\\admin","Admin"+Domain+"Controller");
         gen(ModuleServicePath, Domain, param,"service","service");
         gen(ModuleServicePath, Domain, param,"serviceImpl","service\\impl");
         gen(ModuleServicePath, Domain, param,"queryReq","req");
@@ -68,12 +68,16 @@ public class ServerGenerator {
     }
 
     private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target,String packageName) throws IOException, TemplateException {
+        gen(ModuleServicePath, Domain, param, target, packageName, null);
+    }
+
+    private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target,String packageName, String fileNamePrefix) throws IOException, TemplateException {
         FreemarkerUtil.initConfig(target+".ftl");
         String toPath=ModuleServicePath+packageName+"\\";
         new File(toPath).mkdirs();
         System.out.println(toPath);
         String Target= target.substring(0,1).toUpperCase()+target.substring(1);
-        String fileName=toPath + Domain +Target+".java";
+        String fileName = toPath + (fileNamePrefix != null ? fileNamePrefix : Domain + Target) + ".java";
         System.out.println(fileName);
         FreemarkerUtil.generator(fileName, param);
     }

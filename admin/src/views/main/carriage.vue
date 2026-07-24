@@ -1,6 +1,6 @@
 <template>
-  <div class="station-page">
-    <div class="station-toolbar">
+  <div class="carriage-page">
+    <div class="carriage-toolbar">
       <div class="toolbar-left">
         <a-button type="primary" @click="onAdd">
           <plus-outlined /> 新增
@@ -10,7 +10,7 @@
         </a-button>
         <a-popconfirm
             v-show="selectedRowKeys.length > 0"
-            title="确认删除选中的站点？"
+            title="确认删除选中的车厢？"
             @confirm="onBatchDelete"
             ok-text="确认" cancel-text="取消"
         >
@@ -19,11 +19,11 @@
           </a-button>
         </a-popconfirm>
       </div>
-      <span class="total-tip">共 {{ pagination.total }} 个站点</span>
+      <span class="total-tip">共 {{ pagination.total }} 节车厢</span>
     </div>
 
     <a-table
-        :dataSource="stations"
+        :dataSource="carriages"
         :columns="columns"
         :pagination="tablePagination"
         @change="handleTableChange"
@@ -33,11 +33,17 @@
         :row-selection="rowSelection"
     >
       <template #bodyCell="{ column, record }">
-        <template v-if="column.dataIndex === 'operation'">
+        <template v-if="column.dataIndex === 'seatType'">
+          <a-tag v-if="record.seatType === '1'" color="gold">一等座</a-tag>
+          <a-tag v-else-if="record.seatType === '2'" color="blue">二等座</a-tag>
+          <a-tag v-else-if="record.seatType === '3'" color="green">软卧</a-tag>
+          <a-tag v-else-if="record.seatType === '4'" color="orange">硬卧</a-tag>
+        </template>
+        <template v-else-if="column.dataIndex === 'operation'">
           <a-space>
             <a-button type="link" size="small" @click="onEdit(record)">编辑</a-button>
             <a-popconfirm
-                title="确认删除该站点？"
+                title="确认删除该车厢？"
                 @confirm="onDelete(record)"
                 ok-text="确认" cancel-text="取消"
             >
@@ -50,15 +56,28 @@
 
     <a-modal v-model:visible="visible" :title="modalTitle" @ok="handleOk"
              ok-text="确认" cancel-text="取消" :destroyOnClose="true">
-      <a-form :model="station" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
-        <a-form-item label="站名">
-          <a-input v-model:value="station.name" placeholder="请输入站名" />
+      <a-form :model="carriage" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
+        <a-form-item label="车次编号">
+          <a-input v-model:value="carriage.trainCode" placeholder="请输入车次编号，如 G101" />
         </a-form-item>
-        <a-form-item label="站名拼音">
-          <a-input v-model:value="station.namePinyin" placeholder="自动生成" disabled />
+        <a-form-item label="车厢序号">
+          <a-input-number v-model:value="carriage.index" :min="1" placeholder="请输入车厢序号" style="width: 100%" />
         </a-form-item>
-        <a-form-item label="拼音首字母">
-          <a-input v-model:value="station.namePy" placeholder="自动生成" disabled />
+        <a-form-item label="座位类型">
+          <a-select v-model:value="carriage.seatType" placeholder="请选择座位类型">
+            <a-select-option v-for="t in SEAT_TYPES" :key="t.code" :value="t.code">
+              {{ t.desc }}
+            </a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="座位数">
+          <a-input-number v-model:value="carriage.seatCount" :min="1" placeholder="请输入座位数" style="width: 100%" />
+        </a-form-item>
+        <a-form-item label="排数">
+          <a-input-number v-model:value="carriage.rowCount" :min="1" placeholder="请输入排数" style="width: 100%" />
+        </a-form-item>
+        <a-form-item label="列数">
+          <a-input-number v-model:value="carriage.colCount" :min="1" placeholder="请输入列数" style="width: 100%" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -66,29 +85,28 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed, watch } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons-vue';
-import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
-  name: "station-view",
+  name: "carriage-view",
   components: { PlusOutlined, ReloadOutlined, DeleteOutlined },
   setup() {
+    const SEAT_TYPES = [
+      { code: '1', desc: '一等座' },
+      { code: '2', desc: '二等座' },
+      { code: '3', desc: '软卧' },
+      { code: '4', desc: '硬卧' },
+    ];
+
     const visible = ref(false);
     const loading = ref(false);
     const isEdit = ref(false);
-    const stations = ref([]);
+    const carriages = ref([]);
     const pagination = ref({ total: 0, current: 1, pageSize: 10 });
-    const station = ref({ name: '', namePinyin: '', namePy: '' });
-
-    watch(() => station.value.name, (name) => {
-      if (name) {
-        station.value.namePinyin = pinyin(name, { toneType: 'none' }).replace(/\s+/g, '');
-        station.value.namePy = pinyin(name, { pattern: 'first', toneType: 'none' }).replace(/\s+/g, '');
-      }
-    });
+    const carriage = ref({ trainCode: '', index: 1, seatType: '1', seatCount: 0, rowCount: 0, colCount: 0 });
     const selectedRowKeys = ref([]);
 
     const onSelectChange = (keys) => {
@@ -96,13 +114,14 @@ export default defineComponent({
     };
 
     const columns = [
-      { title: '站名', dataIndex: 'name', key: 'name' },
-      { title: '站名拼音', dataIndex: 'namePinyin', key: 'namePinyin' },
-      { title: '拼音首字母', dataIndex: 'namePy', key: 'namePy' },
+      { title: '车次编号', dataIndex: 'trainCode', key: 'trainCode' },
+      { title: '车厢序号', dataIndex: 'index', key: 'index', align: 'center' },
+      { title: '座位类型', dataIndex: 'seatType', key: 'seatType', align: 'center' },
+      { title: '座位数', dataIndex: 'seatCount', key: 'seatCount', align: 'center' },
       { title: '操作', dataIndex: 'operation', key: 'operation', align: 'center', width: 140 },
     ];
 
-    const modalTitle = computed(() => isEdit.value ? '编辑站点' : '新增站点');
+    const modalTitle = computed(() => isEdit.value ? '编辑车厢' : '新增车厢');
 
     const rowSelection = computed(() => ({
       selectedRowKeys: selectedRowKeys.value,
@@ -122,12 +141,12 @@ export default defineComponent({
         param = { page: 1, size: pagination.value.pageSize };
       }
       loading.value = true;
-      axios.get('/business/admin/station/query-list', {
+      axios.get('/business/admin/train-carriage/query-list', {
         params: { page: param.page, size: param.size }
       }).then((response) => {
         let data = response.data;
         if (data.success) {
-          stations.value = data.content.list;
+          carriages.value = data.content.list;
           pagination.value.current = param.page;
           pagination.value.total = data.content.total;
         } else {
@@ -145,24 +164,23 @@ export default defineComponent({
 
     const onAdd = () => {
       isEdit.value = false;
-      station.value = { name: '', namePinyin: '', namePy: '' };
+      carriage.value = { trainCode: '', index: 1, seatType: '1', seatCount: 0, rowCount: 0, colCount: 0 };
       visible.value = true;
     };
 
     const onEdit = (record) => {
       isEdit.value = true;
-      station.value = {
-        id: record.id,
-        name: record.name,
-        namePinyin: record.namePinyin,
-        namePy: record.namePy,
+      carriage.value = {
+        id: record.id, trainCode: record.trainCode, index: record.index,
+        seatType: record.seatType, seatCount: record.seatCount,
+        rowCount: record.rowCount, colCount: record.colCount,
       };
       visible.value = true;
     };
 
     const handleOk = () => {
-      const url = isEdit.value ? '/business/admin/station/update' : '/business/admin/station/save';
-      axios.post(url, station.value).then((response) => {
+      const url = isEdit.value ? '/business/admin/train-carriage/update' : '/business/admin/train-carriage/save';
+      axios.post(url, carriage.value).then((response) => {
         let data = response.data;
         if (data.success) {
           notification.success({ description: isEdit.value ? '修改成功！' : '保存成功！' });
@@ -175,7 +193,7 @@ export default defineComponent({
     };
 
     const onDelete = (record) => {
-      axios.delete('/business/admin/station/delete/' + record.id).then((response) => {
+      axios.delete('/business/admin/train-carriage/delete/' + record.id).then((response) => {
         let data = response.data;
         if (data.success) {
           notification.success({ description: '删除成功！' });
@@ -188,10 +206,10 @@ export default defineComponent({
 
     const onBatchDelete = () => {
       const ids = selectedRowKeys.value.join(',');
-      axios.delete('/business/admin/station/delete/' + ids).then((response) => {
+      axios.delete('/business/admin/train-carriage/delete/' + ids).then((response) => {
         let data = response.data;
         if (data.success) {
-          notification.success({ description: `已删除 ${selectedRowKeys.value.length} 个站点` });
+          notification.success({ description: `已删除 ${selectedRowKeys.value.length} 节车厢` });
           selectedRowKeys.value = [];
           handleQuery();
         } else {
@@ -205,8 +223,8 @@ export default defineComponent({
     });
 
     return {
-      stations, columns, pagination, tablePagination,
-      station, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
+      SEAT_TYPES, carriages, columns, pagination, tablePagination,
+      carriage, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
       onAdd, onEdit, handleOk, onDelete, onBatchDelete, onSelectChange,
       handleQuery, handleTableChange,
     };
@@ -215,10 +233,10 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.station-page {
+.carriage-page {
   width: 100%;
 }
-.station-toolbar {
+.carriage-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;

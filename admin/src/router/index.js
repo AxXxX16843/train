@@ -19,6 +19,15 @@ const routes = [
     },{
       path: 'train',
       component: () => import('../views/main/train.vue'),
+    },{
+      path: 'carriage',
+      component: () => import('../views/main/carriage.vue'),
+    },{
+      path: 'train-station',
+      component: () => import('../views/main/train-station.vue'),
+    },{
+      path: 'train-seat',
+      component: () => import('../views/main/train-seat.vue'),
     },]
   }
 ]

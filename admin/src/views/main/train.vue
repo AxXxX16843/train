@@ -73,7 +73,7 @@
           <a-input v-model:value="train.startPinyin" placeholder="请输入始发站拼音" />
         </a-form-item>
         <a-form-item label="发车时间">
-          <a-input v-model:value="train.startTime" placeholder="如 08:00" />
+          <a-time-picker v-model:value="train.startTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择发车时间" style="width: 100%" />
         </a-form-item>
         <a-form-item label="终点站">
           <a-input v-model:value="train.end" placeholder="请输入终点站" />
@@ -82,7 +82,7 @@
           <a-input v-model:value="train.endPinyin" placeholder="请输入终点站拼音" />
         </a-form-item>
         <a-form-item label="到达时间">
-          <a-input v-model:value="train.endTime" placeholder="如 12:30" />
+          <a-time-picker v-model:value="train.endTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择到达时间" style="width: 100%" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -121,7 +121,9 @@ export default defineComponent({
       { title: '车次编号', dataIndex: 'code', key: 'code' },
       { title: '列车类型', dataIndex: 'type', key: 'type', align: 'center' },
       { title: '始发站', dataIndex: 'start', key: 'start' },
+      { title: '发车时间', dataIndex: 'startTime', key: 'startTime', align: 'center' },
       { title: '终点站', dataIndex: 'end', key: 'end' },
+      { title: '到达时间', dataIndex: 'endTime', key: 'endTime', align: 'center' },
       { title: '操作', dataIndex: 'operation', key: 'operation', align: 'center', width: 140 },
     ];
 

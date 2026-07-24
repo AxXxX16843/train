@@ -17,6 +17,21 @@
           <rocket-outlined /> 车次管理
         </router-link>
       </a-menu-item>
+      <a-menu-item key="/carriage">
+        <router-link to="/carriage">
+          <appstore-outlined /> 车厢管理
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="/train-station">
+        <router-link to="/train-station">
+          <node-index-outlined /> 车站管理
+        </router-link>
+      </a-menu-item>
+      <a-menu-item key="/train-seat">
+        <router-link to="/train-seat">
+          <table-outlined /> 座位管理
+        </router-link>
+      </a-menu-item>
     </a-menu>
   </a-layout-sider>
 </template>
