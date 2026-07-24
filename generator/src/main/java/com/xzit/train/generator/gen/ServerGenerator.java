@@ -1,17 +1,22 @@
 package com.xzit.train.generator.gen;
 
+import com.xzit.train.generator.util.DbUtil;
+import com.xzit.train.generator.util.Field;
 import com.xzit.train.generator.util.FreemarkerUtil;
+import freemarker.template.TemplateException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ServerGenerator {
-    static String servicePath = "train-member\\src\\main\\java\\com\\xzit\\train\\[module]\\service\\impl\\";
+    static String servicePath = "train-member\\src\\main\\java\\com\\xzit\\train\\[module]\\";
     static String pomPath ="generator\\pom.xml";
 //    static {
 //        new File(servicePath).mkdirs();
@@ -29,17 +34,47 @@ public class ServerGenerator {
         Node tableName = table.selectSingleNode("@tableName");
         Node domainObjectName = table.selectSingleNode("@domainObjectName");
         System.out.println(tableName.getText()+"/"+domainObjectName.getText());
+
+        Node connectionURL = document.selectSingleNode("//@connectionURL");
+        Node userId = document.selectSingleNode("//@userId");
+        Node password = document.selectSingleNode("//@password");
+        DbUtil.url = connectionURL.getText();
+        DbUtil.user = userId.getText();
+        DbUtil.password = password.getText();
+
         String Domain = domainObjectName.getText();
         String domain = Domain.substring(0,1).toLowerCase()+Domain.substring(1);
         String do_main= tableName.getText().replaceAll("_","-");
+        String tableComment = DbUtil.getTableComment(tableName.getText());
+        List<Field> fieldList = DbUtil.getColumnByTableName(tableName.getText());
+
+
         Map<String,Object> param=new HashMap<>();
         param.put("domain",domain);
         param.put("do_main",do_main);
         param.put("Domain",Domain);
         System.out.println(param);
-        FreemarkerUtil.initConfig("service.ftl");
-        FreemarkerUtil.generator(ModuleServicePath+Domain+"ServiceImpl.java",param);
+        gen(ModuleServicePath, Domain, param,"controller");
     }
+
+    private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target) throws IOException, TemplateException {
+        FreemarkerUtil.initConfig(target+".ftl");
+        String toPath=ModuleServicePath+camelToSlash(target)+"\\";
+        new File(toPath).mkdirs();
+        System.out.println(toPath);
+        String Target= target.substring(0,1).toUpperCase()+target.substring(1);
+        String fileName=toPath + Domain +Target+".java";
+        System.out.println(fileName);
+        FreemarkerUtil.generator(fileName, param);
+    }
+    public static String camelToSlash(String camelStr) {
+        if (camelStr == null || camelStr.isEmpty()) {
+            return camelStr;
+        }
+        // 在大写字母前添加 / ，之后整体转小写
+        return camelStr.replaceAll("([A-Z])", "/$1").toLowerCase();
+    }
+
 
     private static String getGeneratorPath() throws DocumentException {
         SAXReader reader = new SAXReader();
