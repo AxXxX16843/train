@@ -66,6 +66,11 @@
                 <artifactId>pagehelper-spring-boot-starter</artifactId>
                 <version>1.4.6</version>
             </dependency>
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>2.3.31</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

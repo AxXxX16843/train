@@ -34,6 +34,12 @@ public class PassengerServiceImpl implements PassengerService {
     public CommonResp<Object> save(SavePassengerReq req) {
         Long memberId = MemberContext.getMember().getId();
         DateTime now = DateTime.now();
+        PassengerExample passengerExample = new PassengerExample();
+        passengerExample.createCriteria().andIdCardEqualTo(req.getIdCard());
+        List<Passenger> passengers = passengerMapper.selectByExample(passengerExample);
+        if (ObjectUtil.isNotEmpty(passengers)) {
+            throw new BusinessException(BusinessExpectionEnum.PASSENGER_IS_EXIST);
+        }
         Passenger passenger = BeanUtil.copyProperties(req, Passenger.class);
         passenger.setMemberId(memberId);
         passenger.setId(SnowUtil.getSnowflakeNextId());
