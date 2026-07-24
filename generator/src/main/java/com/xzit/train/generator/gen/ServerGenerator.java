@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class ServerGenerator {
-    static String servicePath = "train-member\\src\\main\\java\\com\\xzit\\train\\[module]\\";
+    static String servicePath = "[module]\\src\\main\\java\\com\\xzit\\train\\[module]\\";
     static String pomPath ="generator\\pom.xml";
 //    static {
 //        new File(servicePath).mkdirs();
@@ -58,9 +58,12 @@ public class ServerGenerator {
         param.put("typeSet",javaTypes);
         System.out.println(param);
         gen(ModuleServicePath, Domain, param,"saveReq","req");
-        gen(ModuleServicePath, Domain, param,"controller","controller");
+        gen(ModuleServicePath, Domain, param,"adminController","admin\\controller");
         gen(ModuleServicePath, Domain, param,"service","service");
         gen(ModuleServicePath, Domain, param,"serviceImpl","service\\impl");
+        gen(ModuleServicePath, Domain, param,"queryReq","req");
+        gen(ModuleServicePath, Domain, param,"queryResp","resp");
+
 
     }
 

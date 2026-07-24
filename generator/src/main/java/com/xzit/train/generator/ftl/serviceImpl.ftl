@@ -2,12 +2,8 @@ package com.xzit.train.${module}.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.xzit.train.common.context.MemberContext;
-import com.xzit.train.common.exception.BusinessException;
-import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -32,16 +28,8 @@ public class ${Domain}ServiceImpl implements ${Domain}Service {
 
     @Override
     public CommonResp<Object> save(${Domain}SaveReq req) {
-        Long ${module}Id = MemberContext.getMember().getId();
         DateTime now = DateTime.now();
-        ${Domain}Example ${domain}Example = new ${Domain}Example();
-        ${domain}Example.createCriteria().andIdCardEqualTo(req.getIdCard());
-        List<${Domain}> ${domain}s = ${domain}Mapper.selectByExample(${domain}Example);
-        if (ObjectUtil.isNotEmpty(${domain}s)) {
-            throw new BusinessException(BusinessExpectionEnum.PASSENGER_IS_EXIST);
-        }
         ${Domain} ${domain} = BeanUtil.copyProperties(req, ${Domain}.class);
-        ${domain}.setMemberId(${module}Id);
         ${domain}.setId(SnowUtil.getSnowflakeNextId());
         ${domain}.setCreateTime(now);
         ${domain}.setUpdateTime(now);
@@ -51,14 +39,8 @@ public class ${Domain}ServiceImpl implements ${Domain}Service {
 
     @Override
     public CommonResp<PageResp<${Domain}QueryResp>> queryList(${Domain}QueryReq req) {
-        Long ${module}Id = req.getId();
-        ${Domain}Example ${domain}Example = new ${Domain}Example();
-        ${Domain}Example.Criteria criteria = ${domain}Example.createCriteria();
-        if (ObjectUtil.isNotNull(${module}Id)) {
-            criteria.andMemberIdEqualTo(${module}Id);
-        }
-        PageHelper.startPage(req.getPage(),req.getSize());
-        List<${Domain}> ${domain}s = ${domain}Mapper.selectByExample(${domain}Example);
+        PageHelper.startPage(req.getPage(), req.getSize());
+        List<${Domain}> ${domain}s = ${domain}Mapper.selectByExample(null);
         PageInfo<${Domain}> pageInfo = new PageInfo<>(${domain}s);
         List<${Domain}QueryResp> ${domain}QueryRespList = BeanUtil.copyToList(${domain}s, ${Domain}QueryResp.class);
         PageResp<${Domain}QueryResp> pageResp = new PageResp<>();
@@ -80,8 +62,8 @@ public class ${Domain}ServiceImpl implements ${Domain}Service {
     @Override
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
-        if (ObjectUtil.isEmpty(list)) {
-            throw new BusinessException(BusinessExpectionEnum.LIST_IS_NULL);
+        if (list.isEmpty()) {
+            return new CommonResp<>();
         }
         for (Long l : list) {
             ${domain}Mapper.deleteByPrimaryKey(l);
@@ -89,4 +71,3 @@ public class ${Domain}ServiceImpl implements ${Domain}Service {
         return new CommonResp<>();
     }
 }
-

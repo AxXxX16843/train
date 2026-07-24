@@ -1,6 +1,5 @@
-package com.xzit.train.${module}.controller;
+package com.xzit.train.${module}.controller.admin;
 
-import com.xzit.train.common.context.MemberContext;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.${module}.req.${Domain}QueryReq;
@@ -12,12 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${do_main}")
-public class ${Domain}Controller {
+@RequestMapping("/admin/${do_main}")
+public class Admin${Domain}Controller {
 
     @Autowired
     private ${Domain}Service ${domain}Service;
-
 
     @PostMapping("save")
     public CommonResp<Object> save(@Valid @RequestBody ${Domain}SaveReq req) {
@@ -25,7 +23,6 @@ public class ${Domain}Controller {
     }
     @GetMapping("query-list")
     public CommonResp<PageResp<${Domain}QueryResp>> queryList(@Valid ${Domain}QueryReq req) {
-        req.setId(MemberContext.getMember().getId());
         return ${domain}Service.queryList(req);
     }
     @PostMapping("update")
@@ -38,4 +35,3 @@ public class ${Domain}Controller {
     }
 
 }
-
