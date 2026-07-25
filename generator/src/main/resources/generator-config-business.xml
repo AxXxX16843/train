@@ -42,6 +42,6 @@
                              type="XMLMAPPER"/>
 
 <!--        <table tableName="member" domainObjectName="Member"/>-->
-                <table tableName="train_seat" domainObjectName="TrainSeat"/>
+                <table tableName="daily_train" domainObjectName="DailyTrain"/>
     </context>
 </generatorConfiguration>

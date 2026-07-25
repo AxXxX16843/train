@@ -64,7 +64,6 @@ public class ServerGenerator {
         gen(ModuleServicePath, Domain, param,"queryReq","req");
         gen(ModuleServicePath, Domain, param,"queryResp","resp");
 
-
     }
 
     private static void gen(String ModuleServicePath, String Domain, Map<String, Object> param,String target,String packageName) throws IOException, TemplateException {

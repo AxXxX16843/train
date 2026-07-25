@@ -5,7 +5,9 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xzit.train.business.domain.TrainCarriageExample;
 import com.xzit.train.business.domain.TrainSeatExample;
+import com.xzit.train.business.mapper.TrainCarriageMapper;
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
@@ -29,6 +31,9 @@ public class TrainServiceImpl implements TrainService {
 
     @Autowired
     private TrainMapper trainMapper;
+    @Autowired
+    private TrainCarriageMapper trainCarriageMapper;
+
 
     @Override
     public CommonResp<Object> save(TrainSaveReq req) {
@@ -77,6 +82,10 @@ public class TrainServiceImpl implements TrainService {
             return new CommonResp<>();
         }
         for (Long l : list) {
+            Train train = trainMapper.selectByPrimaryKey(l);
+            TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+            trainCarriageExample.createCriteria().andTrainCodeEqualTo(train.getCode());
+            trainCarriageMapper.deleteByExample(trainCarriageExample);
             trainMapper.deleteByPrimaryKey(l);
         }
         return new CommonResp<>();

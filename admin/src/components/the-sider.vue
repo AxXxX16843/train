@@ -27,6 +27,14 @@
           <router-link to="/train-seat">座位管理</router-link>
         </a-menu-item>
       </a-sub-menu>
+      <a-sub-menu key="business">
+        <template #title>
+          <span><shopping-outlined /> 业务数据</span>
+        </template>
+        <a-menu-item key="/daily-train">
+          <router-link to="/daily-train">每日车次</router-link>
+        </a-menu-item>
+      </a-sub-menu>
       <a-sub-menu key="batch">
         <template #title>
           <span><schedule-outlined /> 跑批管理</span>

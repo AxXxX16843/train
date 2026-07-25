@@ -125,8 +125,10 @@ export default defineComponent({
 
     const columns = [
       { title: '车次编号', dataIndex: 'trainCode', key: 'trainCode' },
-      { title: '站序', dataIndex: 'index', key: 'index', align: 'center' },
+      { title: '站序', dataIndex: 'index', key: 'index', align: 'center', width: 60 },
       { title: '站名', dataIndex: 'name', key: 'name' },
+      { title: '进站时间', dataIndex: 'inTime', key: 'inTime', align: 'center' },
+      { title: '出站时间', dataIndex: 'outTime', key: 'outTime', align: 'center' },
       { title: '里程(km)', dataIndex: 'km', key: 'km', align: 'center' },
       { title: '操作', dataIndex: 'operation', key: 'operation', align: 'center', width: 140 },
     ];

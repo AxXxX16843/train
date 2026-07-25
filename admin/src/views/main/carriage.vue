@@ -143,7 +143,9 @@ export default defineComponent({
       { title: '车次编号', dataIndex: 'trainCode', key: 'trainCode' },
       { title: '车厢序号', dataIndex: 'index', key: 'index', align: 'center' },
       { title: '座位类型', dataIndex: 'seatType', key: 'seatType', align: 'center' },
-      { title: '座位数', dataIndex: 'seatCount', key: 'seatCount', align: 'center' },
+      { title: '排数', dataIndex: 'rowCount', key: 'rowCount', align: 'center', width: 60 },
+      { title: '列数', dataIndex: 'colCount', key: 'colCount', align: 'center', width: 60 },
+      { title: '座位数', dataIndex: 'seatCount', key: 'seatCount', align: 'center', width: 60 },
       { title: '操作', dataIndex: 'operation', key: 'operation', align: 'center', width: 140 },
     ];
 

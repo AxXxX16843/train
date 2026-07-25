@@ -31,6 +31,9 @@ const routes = [
     },{
       path: 'batch',
       component: () => import('../views/main/batch.vue'),
+    },{
+      path: 'daily-train',
+      component: () => import('../views/main/daily-train.vue'),
     },]
   }
 ]
