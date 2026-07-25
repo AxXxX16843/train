@@ -2,41 +2,12 @@
   <a-layout-header class="header">
     <div class="logo">
       <span class="logo-icon">🚂</span>
-      <span>12306 指挥部</span>
+      <span class="logo-text">12306 指挥部</span>
     </div>
-    <a-menu
-        v-model:selectedKeys="selectedKeys"
-        theme="dark"
-        mode="horizontal"
-    >
+    <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="horizontal">
       <a-menu-item key="/welcome">
         <router-link to="/welcome">
           <home-outlined /> 首页
-        </router-link>
-      </a-menu-item>
-      <a-menu-item key="/station">
-        <router-link to="/station">
-          <environment-outlined /> 站点管理
-        </router-link>
-      </a-menu-item>
-      <a-menu-item key="/train">
-        <router-link to="/train">
-          <rocket-outlined /> 车次管理
-        </router-link>
-      </a-menu-item>
-      <a-menu-item key="/carriage">
-        <router-link to="/carriage">
-          <appstore-outlined /> 车厢管理
-        </router-link>
-      </a-menu-item>
-      <a-menu-item key="/train-station">
-        <router-link to="/train-station">
-          <node-index-outlined /> 车站管理
-        </router-link>
-      </a-menu-item>
-      <a-menu-item key="/train-seat">
-        <router-link to="/train-seat">
-          <table-outlined /> 座位管理
         </router-link>
       </a-menu-item>
     </a-menu>
@@ -51,11 +22,9 @@ export default defineComponent({
   name: "the-header-view",
   setup() {
     const selectedKeys = ref([]);
-
     watch(() => router.currentRoute.value.path, (newValue) => {
       selectedKeys.value = [newValue];
     }, { immediate: true });
-
     return { selectedKeys };
   },
 });
@@ -76,7 +45,6 @@ export default defineComponent({
   font-size: 17px;
   font-weight: 600;
   color: #fff;
-  letter-spacing: 1px;
   flex-shrink: 0;
 }
 </style>

@@ -28,6 +28,9 @@ const routes = [
     },{
       path: 'train-seat',
       component: () => import('../views/main/train-seat.vue'),
+    },{
+      path: 'batch',
+      component: () => import('../views/main/batch.vue'),
     },]
   }
 ]

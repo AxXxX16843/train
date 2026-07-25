@@ -10,6 +10,7 @@ import com.xzit.train.business.domain.TrainCarriage;
 import com.xzit.train.business.domain.TrainCarriageExample;
 import com.xzit.train.business.enums.SeatColEnum;
 import com.xzit.train.business.mapper.TrainCarriageMapper;
+import com.xzit.train.business.mapper.TrainMapper;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -22,6 +23,7 @@ import com.xzit.train.business.resp.TrainSeatQueryResp;
 import com.xzit.train.business.service.TrainSeatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -34,6 +36,8 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     private TrainSeatMapper trainSeatMapper;
     @Autowired
     private TrainCarriageMapper trainCarriageMapper;
+    @Autowired
+    private TrainMapper trainMapper;
 
     @Override
     public CommonResp<Object> save(TrainSeatSaveReq req) {
@@ -87,6 +91,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     }
 
     @Override
+    @Transactional
     public CommonResp<Object> genSeat(String trainCode) {
         DateTime now = DateTime.now();
         int seatIndex=1;
