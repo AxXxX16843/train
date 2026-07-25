@@ -8,7 +8,7 @@
         <a-button @click="handleQuery()" style="margin-left: 8px">
           <reload-outlined /> 刷新
         </a-button>
-        <a-select v-model:value="searchCode" placeholder="按车次筛选" allowClear show-search style="width: 240px; margin-left: 8px" @change="(val) => { searchCode = val; handleQuery({}); }">
+        <a-select v-model:value="searchCode" placeholder="按车次筛选" allowClear show-search style="width: 240px; margin-left: 8px" @change="onSearch">
           <a-select-option v-for="t in trainCodeList" :key="t.code" :value="t.code">
             {{ t.code }}（{{ t.start }} → {{ t.end }}）
           </a-select-option>
@@ -119,6 +119,11 @@ export default defineComponent({
     const selectedRowKeys = ref([]);
     const trainCodeList = ref([]);
     const searchCode = ref();
+
+    const onSearch = (val) => {
+      searchCode.value = val;
+      handleQuery({ page: 1, size: pagination.value.pageSize });
+    };
 
     const SEAT_COL_MAP = { '1': 4, '2': 5, '3': 4, '4': 4 };
 
@@ -250,7 +255,7 @@ export default defineComponent({
     return {
       SEAT_TYPES, carriages, columns, pagination, tablePagination,
       carriage, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
-      trainCodeList, searchCode,
+      trainCodeList, searchCode, onSearch,
       onAdd, onEdit, handleOk, onDelete, onBatchDelete, onSelectChange,
       handleQuery, handleTableChange,
     };
