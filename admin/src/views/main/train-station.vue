@@ -79,7 +79,7 @@
           <a-time-picker v-model:value="item.outTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择出站时间" style="width: 100%" />
         </a-form-item>
         <a-form-item label="停留时间">
-          <a-time-picker v-model:value="item.stopTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择停留时间" style="width: 100%" />
+          <a-input :value="item.stopTime" placeholder="自动计算" disabled />
         </a-form-item>
         <a-form-item label="里程(km)">
           <a-input-number v-model:value="item.km" :min="0" :step="0.1" placeholder="请输入里程" style="width: 100%" />
@@ -122,6 +122,17 @@ export default defineComponent({
     watch(() => item.value.name, (name) => {
       if (name) item.value.namePinyin = pinyin(name, { toneType: 'none' }).replace(/\s+/g, '');
     });
+
+    const calcStopTime = () => {
+      const t = (s) => { const p = (s||'').split(':'); return parseInt(p[0])*3600 + parseInt(p[1])*60 + parseInt(p[2]); };
+      const diff = t(item.value.outTime) - t(item.value.inTime);
+      if (diff > 0) {
+        const h = Math.floor(diff/3600), m = Math.floor((diff%3600)/60), s = diff%60;
+        item.value.stopTime = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+      }
+    };
+    watch(() => item.value.inTime, calcStopTime);
+    watch(() => item.value.outTime, calcStopTime);
 
     const columns = [
       { title: '车次编号', dataIndex: 'trainCode', key: 'trainCode' },
