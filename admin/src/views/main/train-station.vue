@@ -8,6 +8,11 @@
         <a-button @click="handleQuery()" style="margin-left: 8px">
           <reload-outlined /> 刷新
         </a-button>
+        <a-select v-model:value="searchCode" placeholder="按车次筛选" allowClear show-search style="width: 240px; margin-left: 8px" @change="(val) => { searchCode = val; handleQuery({}); }">
+          <a-select-option v-for="t in trainCodeList" :key="t.code" :value="t.code">
+            {{ t.code }}（{{ t.start }} → {{ t.end }}）
+          </a-select-option>
+        </a-select>
         <a-popconfirm
             v-show="selectedRowKeys.length > 0"
             title="确认删除选中的车站？"
@@ -52,7 +57,11 @@
              ok-text="确认" cancel-text="取消" :destroyOnClose="true" width="560px">
       <a-form :model="item" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
         <a-form-item label="车次编号">
-          <a-input v-model:value="item.trainCode" placeholder="请输入车次编号" />
+          <a-select v-model:value="item.trainCode" placeholder="请选择车次编号" show-search>
+            <a-select-option v-for="t in trainCodeList" :key="t.code" :value="t.code">
+              {{ t.code }}（{{ t.start }} → {{ t.end }}）
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="站序">
           <a-input-number v-model:value="item.index" :min="1" placeholder="请输入站序" style="width: 100%" />
@@ -61,7 +70,7 @@
           <a-input v-model:value="item.name" placeholder="请输入站名" />
         </a-form-item>
         <a-form-item label="站名拼音">
-          <a-input v-model:value="item.namePinyin" placeholder="请输入站名拼音" />
+          <a-input v-model:value="item.namePinyin" placeholder="自动生成" disabled />
         </a-form-item>
         <a-form-item label="进站时间">
           <a-time-picker v-model:value="item.inTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择进站时间" style="width: 100%" />
@@ -81,10 +90,11 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed } from 'vue';
+import { defineComponent, ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons-vue';
+import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
   name: "train-station-view",
@@ -97,10 +107,16 @@ export default defineComponent({
     const pagination = ref({ total: 0, current: 1, pageSize: 10 });
     const item = ref({ trainCode: '', index: 1, name: '', namePinyin: '', inTime: '', outTime: '', stopTime: '', km: 0 });
     const selectedRowKeys = ref([]);
+    const trainCodeList = ref([]);
+    const searchCode = ref();
 
     const onSelectChange = (keys) => {
       selectedRowKeys.value = keys;
     };
+
+    watch(() => item.value.name, (name) => {
+      if (name) item.value.namePinyin = pinyin(name, { toneType: 'none' }).replace(/\s+/g, '');
+    });
 
     const columns = [
       { title: '车次编号', dataIndex: 'trainCode', key: 'trainCode' },
@@ -128,10 +144,11 @@ export default defineComponent({
     const handleQuery = (param) => {
       if (!param) {
         param = { page: 1, size: pagination.value.pageSize };
+        searchCode.value = undefined;
       }
       loading.value = true;
       axios.get('/business/admin/train-station/query-list', {
-        params: { page: param.page, size: param.size }
+        params: { page: param.page, size: param.size, trainCode: searchCode.value }
       }).then((response) => {
         let data = response.data;
         if (data.success) {
@@ -210,11 +227,15 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
+      axios.get('/business/admin/train/query-all').then((res) => {
+        if (res.data.success) trainCodeList.value = res.data.content;
+      });
     });
 
     return {
       trainStations, columns, pagination, tablePagination,
       item, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
+      trainCodeList, searchCode,
       onAdd, onEdit, handleOk, onDelete, onBatchDelete, onSelectChange,
       handleQuery, handleTableChange,
     };

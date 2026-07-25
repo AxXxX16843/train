@@ -1,5 +1,6 @@
 package com.xzit.train.business.controller.admin;
 
+import com.xzit.train.business.service.TrainSeatService;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.business.req.TrainQueryReq;
@@ -10,12 +11,16 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin/train")
 public class AdminTrainController {
 
     @Autowired
     private TrainService trainService;
+    @Autowired
+    private TrainSeatService trainSeatService;
 
     @PostMapping("save")
     public CommonResp<Object> save(@Valid @RequestBody TrainSaveReq req) {
@@ -32,6 +37,14 @@ public class AdminTrainController {
     @DeleteMapping("delete/{ids}")
     public CommonResp<Object> delete(@PathVariable("ids") String ids) {
         return trainService.delete(ids);
+    }
+    @GetMapping("/query-all")
+    public CommonResp<List<TrainQueryResp>> queryAll() {
+        return trainService.queryAll();
+    }
+    @PostMapping("/gen-seat/{trainCode}")
+    public CommonResp<Object> genSeat(@PathVariable("trainCode") String trainCode) {
+        return trainSeatService.genSeat(trainCode);
     }
 
 }

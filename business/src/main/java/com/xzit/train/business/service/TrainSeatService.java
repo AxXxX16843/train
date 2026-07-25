@@ -15,4 +15,6 @@ public interface TrainSeatService {
     CommonResp<Object> modify(TrainSeatSaveReq req);
 
     CommonResp<Object> delete(String ids);
+
+    CommonResp<Object> genSeat(String trainCode);
 }

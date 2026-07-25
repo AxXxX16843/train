@@ -7,5 +7,5 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class TrainCarriageQueryReq extends PageReq {
-
+    private String trainCode;
 }

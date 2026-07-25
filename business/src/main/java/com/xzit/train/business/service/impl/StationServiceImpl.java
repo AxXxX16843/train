@@ -86,5 +86,14 @@ public class StationServiceImpl implements StationService {
         }
         return new CommonResp<>();
     }
+
+    @Override
+    public CommonResp<List<StationQueryResp>> queryAll() {
+        StationExample stationExample = new StationExample();
+        stationExample.setOrderByClause("name_py asc");
+        List<Station> stations = stationMapper.selectByExample(stationExample);
+        List<StationQueryResp> stationQueryRespList = BeanUtil.copyToList(stations, StationQueryResp.class);
+        return new CommonResp<>(stationQueryRespList);
+    }
 }
 

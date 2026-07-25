@@ -2,8 +2,12 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xzit.train.business.domain.TrainSeatExample;
+import com.xzit.train.common.exception.BusinessException;
+import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -28,6 +32,13 @@ public class TrainServiceImpl implements TrainService {
 
     @Override
     public CommonResp<Object> save(TrainSaveReq req) {
+        TrainExample trainExample = new TrainExample();
+        TrainExample.Criteria criteria = trainExample.createCriteria();
+        criteria.andCodeEqualTo(req.getCode());
+        List<Train> trains = trainMapper.selectByExample(trainExample);
+        if(ObjectUtil.isNotEmpty(trains)) {
+            throw new BusinessException(BusinessExpectionEnum.TRAIN_IS_EXIST);
+        }
         DateTime now = DateTime.now();
         Train train = BeanUtil.copyProperties(req, Train.class);
         train.setId(SnowUtil.getSnowflakeNextId());
@@ -70,4 +81,14 @@ public class TrainServiceImpl implements TrainService {
         }
         return new CommonResp<>();
     }
+
+    @Override
+    public CommonResp<List<TrainQueryResp>> queryAll() {
+        TrainExample trainExample = new TrainExample();
+        trainExample.setOrderByClause("code desc");
+        List<Train> trains = trainMapper.selectByExample(trainExample);
+        return new CommonResp<>(BeanUtil.copyToList(trains,TrainQueryResp.class));
+    }
+
+
 }

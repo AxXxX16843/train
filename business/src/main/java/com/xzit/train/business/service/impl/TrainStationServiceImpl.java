@@ -2,8 +2,10 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xzit.train.business.domain.TrainSeatExample;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -39,8 +41,13 @@ public class TrainStationServiceImpl implements TrainStationService {
 
     @Override
     public CommonResp<PageResp<TrainStationQueryResp>> queryList(TrainStationQueryReq req) {
+        TrainStationExample trainStationExample = new TrainStationExample();
+        TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
+        if(ObjectUtil.isNotNull(req.getTrainCode())&&ObjectUtil.isNotEmpty(req.getTrainCode())){
+            criteria.andTrainCodeEqualTo(req.getTrainCode());
+        }
         PageHelper.startPage(req.getPage(), req.getSize());
-        List<TrainStation> trainStations = trainStationMapper.selectByExample(null);
+        List<TrainStation> trainStations = trainStationMapper.selectByExample(trainStationExample);
         PageInfo<TrainStation> pageInfo = new PageInfo<>(trainStations);
         List<TrainStationQueryResp> trainStationQueryRespList = BeanUtil.copyToList(trainStations, TrainStationQueryResp.class);
         PageResp<TrainStationQueryResp> pageResp = new PageResp<>();

@@ -2,8 +2,14 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xzit.train.business.domain.TrainCarriage;
+import com.xzit.train.business.domain.TrainCarriageExample;
+import com.xzit.train.business.enums.SeatColEnum;
+import com.xzit.train.business.mapper.TrainCarriageMapper;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -18,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -25,6 +32,8 @@ public class TrainSeatServiceImpl implements TrainSeatService {
 
     @Autowired
     private TrainSeatMapper trainSeatMapper;
+    @Autowired
+    private TrainCarriageMapper trainCarriageMapper;
 
     @Override
     public CommonResp<Object> save(TrainSeatSaveReq req) {
@@ -39,8 +48,14 @@ public class TrainSeatServiceImpl implements TrainSeatService {
 
     @Override
     public CommonResp<PageResp<TrainSeatQueryResp>> queryList(TrainSeatQueryReq req) {
+
+        TrainSeatExample trainSeatExample = new TrainSeatExample();
+        TrainSeatExample.Criteria criteria = trainSeatExample.createCriteria();
+        if(ObjectUtil.isNotNull(req.getTrainCode())&&ObjectUtil.isNotEmpty(req.getTrainCode())){
+            criteria.andTrainCodeEqualTo(req.getTrainCode());
+        }
         PageHelper.startPage(req.getPage(), req.getSize());
-        List<TrainSeat> trainSeats = trainSeatMapper.selectByExample(null);
+        List<TrainSeat> trainSeats = trainSeatMapper.selectByExample(trainSeatExample);
         PageInfo<TrainSeat> pageInfo = new PageInfo<>(trainSeats);
         List<TrainSeatQueryResp> trainSeatQueryRespList = BeanUtil.copyToList(trainSeats, TrainSeatQueryResp.class);
         PageResp<TrainSeatQueryResp> pageResp = new PageResp<>();
@@ -67,6 +82,39 @@ public class TrainSeatServiceImpl implements TrainSeatService {
         }
         for (Long l : list) {
             trainSeatMapper.deleteByPrimaryKey(l);
+        }
+        return new CommonResp<>();
+    }
+
+    @Override
+    public CommonResp<Object> genSeat(String trainCode) {
+        DateTime now = DateTime.now();
+        int seatIndex=1;
+        TrainSeat trainSeat = new TrainSeat();
+        TrainSeatExample trainSeatExample = new TrainSeatExample();
+        TrainSeatExample.Criteria criteria = trainSeatExample.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode);
+        trainSeatMapper.deleteByExample(trainSeatExample);
+        TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+        TrainCarriageExample.Criteria criteria2 = trainCarriageExample.createCriteria();
+        criteria2.andTrainCodeEqualTo(trainCode);
+        List<TrainCarriage> trainCarriages = trainCarriageMapper.selectByExample(trainCarriageExample);
+        for (TrainCarriage trainCarriage : trainCarriages) {
+            List<SeatColEnum> colByType = SeatColEnum.getColByType(trainCarriage.getSeatType());
+            for (int i = 1; i <= trainCarriage.getRowCount(); i++) {
+                for (SeatColEnum seatColEnum : colByType) {
+                    trainSeat.setTrainCode(trainCode);
+                    trainSeat.setCarriageIndex(trainCarriage.getIndex());
+                    trainSeat.setCol(seatColEnum.getCode());
+                    trainSeat.setSeatType(seatColEnum.getType());
+                    trainSeat.setRow(StrUtil.fillBefore(String.valueOf(i),'0',2));
+                    trainSeat.setUpdateTime(now);
+                    trainSeat.setCreateTime(now);
+                    trainSeat.setId(SnowUtil.getSnowflakeNextId());
+                    trainSeat.setCarriageSeatIndex(seatIndex++);
+                    trainSeatMapper.insert(trainSeat);
+                }
+            }
         }
         return new CommonResp<>();
     }

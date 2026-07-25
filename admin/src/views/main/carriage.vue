@@ -8,6 +8,11 @@
         <a-button @click="handleQuery()" style="margin-left: 8px">
           <reload-outlined /> 刷新
         </a-button>
+        <a-select v-model:value="searchCode" placeholder="按车次筛选" allowClear show-search style="width: 240px; margin-left: 8px" @change="(val) => { searchCode = val; handleQuery({}); }">
+          <a-select-option v-for="t in trainCodeList" :key="t.code" :value="t.code">
+            {{ t.code }}（{{ t.start }} → {{ t.end }}）
+          </a-select-option>
+        </a-select>
         <a-popconfirm
             v-show="selectedRowKeys.length > 0"
             title="确认删除选中的车厢？"
@@ -58,7 +63,11 @@
              ok-text="确认" cancel-text="取消" :destroyOnClose="true">
       <a-form :model="carriage" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
         <a-form-item label="车次编号">
-          <a-input v-model:value="carriage.trainCode" placeholder="请输入车次编号，如 G101" />
+          <a-select v-model:value="carriage.trainCode" placeholder="请选择车次编号" show-search>
+            <a-select-option v-for="t in trainCodeList" :key="t.code" :value="t.code">
+              {{ t.code }}（{{ t.start }} → {{ t.end }}）
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="车厢序号">
           <a-input-number v-model:value="carriage.index" :min="1" placeholder="请输入车厢序号" style="width: 100%" />
@@ -70,14 +79,14 @@
             </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item label="座位数">
-          <a-input-number v-model:value="carriage.seatCount" :min="1" placeholder="请输入座位数" style="width: 100%" />
-        </a-form-item>
         <a-form-item label="排数">
           <a-input-number v-model:value="carriage.rowCount" :min="1" placeholder="请输入排数" style="width: 100%" />
         </a-form-item>
         <a-form-item label="列数">
-          <a-input-number v-model:value="carriage.colCount" :min="1" placeholder="请输入列数" style="width: 100%" />
+          <a-input-number v-model:value="carriage.colCount" :min="1" placeholder="自动计算" disabled style="width: 100%" />
+        </a-form-item>
+        <a-form-item label="座位数">
+          <a-input-number v-model:value="carriage.seatCount" :min="1" placeholder="自动计算" disabled style="width: 100%" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -85,7 +94,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed } from 'vue';
+import { defineComponent, ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons-vue';
@@ -108,6 +117,18 @@ export default defineComponent({
     const pagination = ref({ total: 0, current: 1, pageSize: 10 });
     const carriage = ref({ trainCode: '', index: 1, seatType: '1', seatCount: 0, rowCount: 0, colCount: 0 });
     const selectedRowKeys = ref([]);
+    const trainCodeList = ref([]);
+    const searchCode = ref();
+
+    const SEAT_COL_MAP = { '1': 4, '2': 5, '3': 4, '4': 4 };
+
+    watch(() => carriage.value.seatType, (type) => {
+      carriage.value.colCount = type ? SEAT_COL_MAP[type] || 0 : 0;
+    });
+    watch([() => carriage.value.rowCount, () => carriage.value.colCount], () => {
+      const r = carriage.value.rowCount, c = carriage.value.colCount;
+      if (r && c) carriage.value.seatCount = r * c;
+    });
 
     const onSelectChange = (keys) => {
       selectedRowKeys.value = keys;
@@ -139,10 +160,11 @@ export default defineComponent({
     const handleQuery = (param) => {
       if (!param) {
         param = { page: 1, size: pagination.value.pageSize };
+        searchCode.value = undefined;
       }
       loading.value = true;
       axios.get('/business/admin/train-carriage/query-list', {
-        params: { page: param.page, size: param.size }
+        params: { page: param.page, size: param.size, trainCode: searchCode.value }
       }).then((response) => {
         let data = response.data;
         if (data.success) {
@@ -164,7 +186,7 @@ export default defineComponent({
 
     const onAdd = () => {
       isEdit.value = false;
-      carriage.value = { trainCode: '', index: 1, seatType: '1', seatCount: 0, rowCount: 0, colCount: 0 };
+      carriage.value = { trainCode: '', index: 1, seatType: undefined, seatCount: 0, rowCount: 0, colCount: 0 };
       visible.value = true;
     };
 
@@ -220,11 +242,15 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
+      axios.get('/business/admin/train/query-all').then((res) => {
+        if (res.data.success) trainCodeList.value = res.data.content;
+      });
     });
 
     return {
       SEAT_TYPES, carriages, columns, pagination, tablePagination,
       carriage, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
+      trainCodeList, searchCode,
       onAdd, onEdit, handleOk, onDelete, onBatchDelete, onSelectChange,
       handleQuery, handleTableChange,
     };

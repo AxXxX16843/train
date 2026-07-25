@@ -42,6 +42,13 @@
           <a-space>
             <a-button type="link" size="small" @click="onEdit(record)">编辑</a-button>
             <a-popconfirm
+                title="确认生成该车次的所有座位？"
+                @confirm="onGenSeat(record)"
+                ok-text="确认" cancel-text="取消"
+            >
+              <a-button type="link" size="small">开始售票</a-button>
+            </a-popconfirm>
+            <a-popconfirm
                 title="确认删除该车次？"
                 @confirm="onDelete(record)"
                 ok-text="确认" cancel-text="取消"
@@ -67,19 +74,27 @@
           </a-select>
         </a-form-item>
         <a-form-item label="始发站">
-          <a-input v-model:value="train.start" placeholder="请输入始发站" />
+          <a-select v-model:value="train.start" placeholder="请选择始发站" show-search>
+            <a-select-option v-for="s in stationList" :key="s.name" :value="s.name">
+              {{ s.name }}（{{ s.namePinyin }}）
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="始发站拼音">
-          <a-input v-model:value="train.startPinyin" placeholder="请输入始发站拼音" />
+          <a-input v-model:value="train.startPinyin" placeholder="自动生成" disabled />
         </a-form-item>
         <a-form-item label="发车时间">
           <a-time-picker v-model:value="train.startTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择发车时间" style="width: 100%" />
         </a-form-item>
         <a-form-item label="终点站">
-          <a-input v-model:value="train.end" placeholder="请输入终点站" />
+          <a-select v-model:value="train.end" placeholder="请选择终点站" show-search>
+            <a-select-option v-for="s in stationList" :key="s.name" :value="s.name">
+              {{ s.name }}（{{ s.namePinyin }}）
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="终点站拼音">
-          <a-input v-model:value="train.endPinyin" placeholder="请输入终点站拼音" />
+          <a-input v-model:value="train.endPinyin" placeholder="自动生成" disabled />
         </a-form-item>
         <a-form-item label="到达时间">
           <a-time-picker v-model:value="train.endTime" value-format="HH:mm:ss" format="HH:mm:ss" placeholder="请选择到达时间" style="width: 100%" />
@@ -90,10 +105,11 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, computed } from 'vue';
+import { defineComponent, ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons-vue';
+import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
   name: "train-view",
@@ -111,6 +127,12 @@ export default defineComponent({
     const trains = ref([]);
     const pagination = ref({ total: 0, current: 1, pageSize: 10 });
     const train = ref({ code: '', type: 'G', start: '', startPinyin: '', startTime: '', end: '', endPinyin: '', endTime: '' });
+    const stationList = ref([]);
+
+    const fillPinyin = (name) => pinyin(name, { toneType: 'none' }).replace(/\s+/g, '');
+
+    watch(() => train.value.start, (name) => { if (name) train.value.startPinyin = fillPinyin(name); });
+    watch(() => train.value.end,   (name) => { if (name) train.value.endPinyin   = fillPinyin(name); });
     const selectedRowKeys = ref([]);
 
     const onSelectChange = (keys) => {
@@ -198,6 +220,17 @@ export default defineComponent({
       });
     };
 
+    const onGenSeat = (record) => {
+      axios.post('/business/admin/train/gen-seat/' + record.code).then((response) => {
+        let data = response.data;
+        if (data.success) {
+          notification.success({ description: '座位生成成功！' });
+        } else {
+          notification.error({ description: data.message });
+        }
+      });
+    };
+
     const onDelete = (record) => {
       axios.delete('/business/admin/train/delete/' + record.id).then((response) => {
         let data = response.data;
@@ -226,12 +259,16 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
+      axios.get('/business/admin/station/query-all').then((res) => {
+        if (res.data.success) stationList.value = res.data.content;
+      });
     });
 
     return {
       TRAIN_TYPES, trains, columns, pagination, tablePagination,
       train, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
-      onAdd, onEdit, handleOk, onDelete, onBatchDelete, onSelectChange,
+      stationList,
+      onAdd, onEdit, handleOk, onDelete, onBatchDelete, onGenSeat, onSelectChange,
       handleQuery, handleTableChange,
     };
   },

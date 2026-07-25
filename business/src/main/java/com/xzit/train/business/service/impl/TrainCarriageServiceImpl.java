@@ -2,8 +2,13 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xzit.train.business.enums.SeatColEnum;
+import com.xzit.train.business.enums.SeatTypeEnum;
+import com.xzit.train.common.exception.BusinessException;
+import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -28,6 +33,19 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
 
     @Override
     public CommonResp<Object> save(TrainCarriageSaveReq req) {
+
+        TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+        TrainCarriageExample.Criteria criteria = trainCarriageExample.createCriteria();
+        criteria.andTrainCodeEqualTo(req.getTrainCode()).andIndexEqualTo(req.getIndex());
+        List<TrainCarriage> trainCarriages = trainCarriageMapper.selectByExample(trainCarriageExample);
+        if (ObjectUtil.isNotEmpty(trainCarriages)) {
+         throw new BusinessException(BusinessExpectionEnum.CARRIAGE_IS_EXIST);
+        }
+
+        List<SeatColEnum> colByType = SeatColEnum.getColByType(req.getSeatType());
+        req.setColCount(colByType.size());
+        int count=colByType.size()*req.getRowCount();
+        req.setSeatCount(count);
         DateTime now = DateTime.now();
         TrainCarriage trainCarriage = BeanUtil.copyProperties(req, TrainCarriage.class);
         trainCarriage.setId(SnowUtil.getSnowflakeNextId());
@@ -39,8 +57,14 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
 
     @Override
     public CommonResp<PageResp<TrainCarriageQueryResp>> queryList(TrainCarriageQueryReq req) {
+
+        TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
+        TrainCarriageExample.Criteria criteria = trainCarriageExample.createCriteria();
+        if(ObjectUtil.isNotNull(req.getTrainCode())&&ObjectUtil.isNotEmpty(req.getTrainCode())){
+            criteria.andTrainCodeEqualTo(req.getTrainCode());
+        }
         PageHelper.startPage(req.getPage(), req.getSize());
-        List<TrainCarriage> trainCarriages = trainCarriageMapper.selectByExample(null);
+        List<TrainCarriage> trainCarriages = trainCarriageMapper.selectByExample(trainCarriageExample);
         PageInfo<TrainCarriage> pageInfo = new PageInfo<>(trainCarriages);
         List<TrainCarriageQueryResp> trainCarriageQueryRespList = BeanUtil.copyToList(trainCarriages, TrainCarriageQueryResp.class);
         PageResp<TrainCarriageQueryResp> pageResp = new PageResp<>();

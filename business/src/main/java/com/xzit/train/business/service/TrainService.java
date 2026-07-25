@@ -6,6 +6,8 @@ import com.xzit.train.business.req.TrainQueryReq;
 import com.xzit.train.business.req.TrainSaveReq;
 import com.xzit.train.business.resp.TrainQueryResp;
 
+import java.util.List;
+
 public interface TrainService {
 
     CommonResp<Object> save(TrainSaveReq req);
@@ -15,4 +17,7 @@ public interface TrainService {
     CommonResp<Object> modify(TrainSaveReq req);
 
     CommonResp<Object> delete(String ids);
+
+    CommonResp<List<TrainQueryResp>> queryAll();
+
 }
