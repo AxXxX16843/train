@@ -9,9 +9,7 @@ import com.xzit.train.business.domain.Train;
 import com.xzit.train.business.domain.TrainExample;
 import com.xzit.train.business.mapper.DailyTrainStationMapper;
 import com.xzit.train.business.mapper.TrainMapper;
-import com.xzit.train.business.service.DailyTrainCarriageService;
-import com.xzit.train.business.service.DailyTrainSeatService;
-import com.xzit.train.business.service.DailyTrainStationService;
+import com.xzit.train.business.service.*;
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
@@ -23,10 +21,10 @@ import com.xzit.train.business.mapper.DailyTrainMapper;
 import com.xzit.train.business.req.DailyTrainQueryReq;
 import com.xzit.train.business.req.DailyTrainSaveReq;
 import com.xzit.train.business.resp.DailyTrainQueryResp;
-import com.xzit.train.business.service.DailyTrainService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -48,6 +46,9 @@ public class DailyTrainServiceImpl implements DailyTrainService {
 
     @Autowired
     private DailyTrainSeatService dailyTrainSeatService;
+
+    @Autowired
+    private DailyTrainTicketService dailyTrainTicketService;
 
 
     @Override
@@ -111,6 +112,8 @@ public class DailyTrainServiceImpl implements DailyTrainService {
         return new CommonResp<>();
     }
 
+
+    @Transactional
     @Override
     public CommonResp<Object> genDaily(Date date) {
         List<Train> trains = trainMapper.selectByExample(null);
@@ -142,6 +145,9 @@ public class DailyTrainServiceImpl implements DailyTrainService {
         dailyTrainCarriageService.genDailyCarriage(train.getCode(), date);
         log.info("生成该车次座位");
         dailyTrainSeatService.genDailySeat(train.getCode(), date);
+        log.info("生成每日车票信息");
+        dailyTrainTicketService.genDailyTicket(train.getCode(), date);
+
     }
 }
 

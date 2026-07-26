@@ -23,6 +23,7 @@ import com.xzit.train.business.resp.DailyTrainCarriageQueryResp;
 import com.xzit.train.business.service.DailyTrainCarriageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -102,6 +103,7 @@ public class DailyTrainCarriageServiceImpl implements DailyTrainCarriageService 
         return new CommonResp<>();
     }
 
+    @Transactional
     @Override
     public CommonResp<Object> genDailyCarriage(String trainCode, Date date) {
         DateTime now = DateTime.now();

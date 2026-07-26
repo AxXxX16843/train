@@ -17,6 +17,7 @@ import com.xzit.train.business.resp.DailyTrainStationQueryResp;
 import com.xzit.train.business.service.DailyTrainStationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -83,6 +84,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
         return new CommonResp<>();
     }
 
+    @Transactional
     @Override
     public CommonResp<Object> genDailyStation(String train, Date date) {
         DateTime now = DateTime.now();
