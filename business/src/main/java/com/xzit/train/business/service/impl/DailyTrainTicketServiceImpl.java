@@ -2,10 +2,14 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.util.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xzit.train.business.domain.*;
+import com.xzit.train.business.enums.SeatTypeEnum;
+import com.xzit.train.business.enums.TrainTypeEnum;
 import com.xzit.train.business.mapper.TrainStationMapper;
+import com.xzit.train.business.service.DailyTrainSeatService;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -31,6 +35,10 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
     @Autowired
     private TrainStationMapper trainStationMapper;
 
+    @Autowired
+    private DailyTrainSeatServiceImpl dailyTrainSeatService;
+
+
     @Override
     public CommonResp<Object> save(DailyTrainTicketSaveReq req) {
         DateTime now = DateTime.now();
@@ -44,8 +52,23 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
 
     @Override
     public CommonResp<PageResp<DailyTrainTicketQueryResp>> queryList(DailyTrainTicketQueryReq req) {
+
+        DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
+        DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
+        if(ObjectUtil.isNotNull(req.getTrainCode())&& ObjectUtil.isNotEmpty(req.getTrainCode())){
+            criteria.andTrainCodeEqualTo(req.getTrainCode());
+        }
+        if(ObjectUtil.isNotNull(req.getDate())){
+            criteria.andDateEqualTo(req.getDate());
+        }
+        if(ObjectUtil.isNotNull(req.getStartStation())){
+            criteria.andStartEqualTo(req.getStartStation());
+        }
+        if(ObjectUtil.isNotNull(req.getEndStation())){
+            criteria.andEndEqualTo(req.getEndStation());
+        }
         PageHelper.startPage(req.getPage(), req.getSize());
-        List<DailyTrainTicket> dailyTrainTickets = dailyTrainTicketMapper.selectByExample(null);
+        List<DailyTrainTicket> dailyTrainTickets = dailyTrainTicketMapper.selectByExample(dailyTrainTicketExample);
         PageInfo<DailyTrainTicket> pageInfo = new PageInfo<>(dailyTrainTickets);
         List<DailyTrainTicketQueryResp> dailyTrainTicketQueryRespList = BeanUtil.copyToList(dailyTrainTickets, DailyTrainTicketQueryResp.class);
         PageResp<DailyTrainTicketQueryResp> pageResp = new PageResp<>();
@@ -76,21 +99,29 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         return new CommonResp<>();
     }
     @Override
-    public void genDailyTicket(String trainCode, Date date) {
+    public void genDailyTicket(String trainCode, Date date, TrainTypeEnum type) {
         DateTime now = DateTime.now();
         DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
         DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
         criteria.andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
         dailyTrainTicketMapper.deleteByExample(dailyTrainTicketExample);
-
-
+        int ydz = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.YDZ.getCode());
+        int edz = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.EDZ.getCode());
+        int rw = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.RW.getCode());
+        int yw = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.YW.getCode());
         TrainStationExample trainStationExample = new TrainStationExample();
         TrainStationExample.Criteria criteria1 = trainStationExample.createCriteria();
         criteria1.andTrainCodeEqualTo(trainCode);
         List<TrainStation> trainStations = trainStationMapper.selectByExample(trainStationExample);
         for (int i = 0; i < trainStations.size(); i++) {
             TrainStation trainStationStart = trainStations.get(i);
+            BigDecimal km = BigDecimal.ZERO;
             for (int j = i + 1; j < trainStations.size(); j++) {
+                BigDecimal add = km.add(trainStations.get(j).getKm());
+                BigDecimal ydzPrice = add.multiply(SeatTypeEnum.YDZ.getPrice()).multiply(type.getPriceRate());
+                BigDecimal edzPrice = add.multiply(SeatTypeEnum.EDZ.getPrice()).multiply(type.getPriceRate());
+                BigDecimal ywPride = add.multiply(SeatTypeEnum.RW.getPrice()).multiply(type.getPriceRate());
+                BigDecimal rwPrice = add.multiply(SeatTypeEnum.YW.getPrice()).multiply(type.getPriceRate());
                 TrainStation trainStationEnd = trainStations.get(j);
                 DailyTrainTicket dailyTrainTicket = new DailyTrainTicket();
                 dailyTrainTicket.setId(SnowUtil.getSnowflakeNextId());
@@ -104,14 +135,14 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
                 dailyTrainTicket.setEndPinyin(trainStationEnd.getNamePinyin());
                 dailyTrainTicket.setEndTime(trainStationEnd.getInTime());
                 dailyTrainTicket.setEndIndex(trainStationEnd.getIndex());
-                dailyTrainTicket.setYdz(0);
-                dailyTrainTicket.setYdzPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setEdz(0);
-                dailyTrainTicket.setEdzPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setRw(0);
-                dailyTrainTicket.setRwPrice(BigDecimal.ZERO);
-                dailyTrainTicket.setYw(0);
-                dailyTrainTicket.setYwPrice(BigDecimal.ZERO);
+                dailyTrainTicket.setYdz(ydz);
+                dailyTrainTicket.setYdzPrice(ydzPrice);
+                dailyTrainTicket.setEdz(edz);
+                dailyTrainTicket.setEdzPrice(edzPrice);
+                dailyTrainTicket.setRw(rw);
+                dailyTrainTicket.setRwPrice(rwPrice);
+                dailyTrainTicket.setYw(yw);
+                dailyTrainTicket.setYwPrice(ywPride);
                 dailyTrainTicket.setCreateTime(now);
                 dailyTrainTicket.setUpdateTime(now);
                 dailyTrainTicketMapper.insert(dailyTrainTicket);

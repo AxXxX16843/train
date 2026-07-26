@@ -37,7 +37,7 @@ public class AdminStationController {
         return stationService.delete(ids);
     }
     @GetMapping("query-all")
-    public CommonResp<List<StationQueryResp>> queryAll(@Valid StationQueryReq req) {
+    public CommonResp<List<StationQueryResp>> queryAll() {
         return stationService.queryAll();
     }
 

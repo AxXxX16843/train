@@ -69,4 +69,12 @@ public enum TrainTypeEnum {
         }
         return list;
     }
+    public static TrainTypeEnum getEnumByCode(String code) {
+        for (TrainTypeEnum anEnum : EnumSet.allOf(TrainTypeEnum.class)) {
+            if (anEnum.code.equals(code)) {
+                return anEnum;
+            }
+        }
+        return null;
+    }
 }

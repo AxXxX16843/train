@@ -17,8 +17,10 @@ public class MemberLoginInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-
         String token = request.getHeader("token");
+        if (token == null || token.isEmpty()) {
+            return true;
+        }
         JSONObject jsonObject = JwtUtil.getJSONObject(token);
         MemberLoginResp resp = JSONUtil.toBean(jsonObject, MemberLoginResp.class);
         log.info("解析出的会员信息：id={}, mobile={}", resp.getId(), resp.getMobile());

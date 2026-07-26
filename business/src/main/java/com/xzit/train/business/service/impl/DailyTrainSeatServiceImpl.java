@@ -125,4 +125,13 @@ public class DailyTrainSeatServiceImpl implements DailyTrainSeatService {
         return new CommonResp<>();
     }
 
+    public int getCount(String trainCode,String type) {
+        DailyTrainSeatExample example = new DailyTrainSeatExample();
+        DailyTrainSeatExample.Criteria criteria = example.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode).andSeatTypeEqualTo(type);
+        if((int)dailyTrainSeatMapper.countByExample(example)==0){
+            return -1;
+        }
+        return (int)dailyTrainSeatMapper.countByExample(example);
+    }
 }

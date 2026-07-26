@@ -1,5 +1,6 @@
 package com.xzit.train.business.service;
 
+import com.xzit.train.business.enums.TrainTypeEnum;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.business.req.DailyTrainTicketQueryReq;
@@ -18,5 +19,5 @@ public interface DailyTrainTicketService {
 
     CommonResp<Object> delete(String ids);
 
-    void genDailyTicket(String trainCode, Date date);
+    void genDailyTicket(String trainCode, Date date, TrainTypeEnum type);
 }

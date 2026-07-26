@@ -11,9 +11,6 @@ const routes = [
       path: 'welcome',
       component: () => import('../views/main/welcome.vue'),
     },{
-      path: 'passenger',
-      component: () => import('../views/main/passenger.vue'),
-    },{
       path: 'station',
       component: () => import('../views/main/station.vue'),
     },{
@@ -43,6 +40,9 @@ const routes = [
     },{
       path: 'daily-train-seat',
       component: () => import('../views/main/daily-train-seat.vue'),
+    },{
+      path: 'daily-train-ticket',
+      component: () => import('../views/main/daily-train-ticket.vue'),
     },]
   }
 ]

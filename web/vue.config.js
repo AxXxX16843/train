@@ -1,4 +1,14 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
-  transpileDependencies: true
+  transpileDependencies: true,
+  devServer: {
+    client: {
+      overlay: {
+        runtimeErrors: (e) => {
+          if (e.message.includes('ResizeObserver') || e.message.includes('parentNode')) return false;
+          return true;
+        },
+      },
+    },
+  },
 })

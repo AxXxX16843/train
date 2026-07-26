@@ -7,6 +7,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xzit.train.business.domain.Train;
 import com.xzit.train.business.domain.TrainExample;
+import com.xzit.train.business.enums.TrainTypeEnum;
 import com.xzit.train.business.mapper.DailyTrainStationMapper;
 import com.xzit.train.business.mapper.TrainMapper;
 import com.xzit.train.business.service.*;
@@ -146,7 +147,12 @@ public class DailyTrainServiceImpl implements DailyTrainService {
         log.info("生成该车次座位");
         dailyTrainSeatService.genDailySeat(train.getCode(), date);
         log.info("生成每日车票信息");
-        dailyTrainTicketService.genDailyTicket(train.getCode(), date);
+        String type = train.getType();
+        TrainTypeEnum trainType = TrainTypeEnum.getEnumByCode(type);
+        if (trainType == null) {
+            throw new BusinessException(BusinessExpectionEnum.TYPE_IS_EMPTY);
+        }
+        dailyTrainTicketService.genDailyTicket(train.getCode(), date,trainType);
 
     }
 }
