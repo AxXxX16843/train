@@ -6,6 +6,8 @@ import com.xzit.train.business.req.DailyTrainQueryReq;
 import com.xzit.train.business.req.DailyTrainSaveReq;
 import com.xzit.train.business.resp.DailyTrainQueryResp;
 
+import java.util.Date;
+
 public interface DailyTrainService {
 
     CommonResp<Object> save(DailyTrainSaveReq req);
@@ -15,4 +17,7 @@ public interface DailyTrainService {
     CommonResp<Object> modify(DailyTrainSaveReq req);
 
     CommonResp<Object> delete(String ids);
+
+    CommonResp<Object> genDaily(Date date);
+
 }

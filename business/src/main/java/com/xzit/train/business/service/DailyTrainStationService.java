@@ -6,6 +6,8 @@ import com.xzit.train.business.req.DailyTrainStationQueryReq;
 import com.xzit.train.business.req.DailyTrainStationSaveReq;
 import com.xzit.train.business.resp.DailyTrainStationQueryResp;
 
+import java.util.Date;
+
 public interface DailyTrainStationService {
 
     CommonResp<Object> save(DailyTrainStationSaveReq req);
@@ -15,4 +17,6 @@ public interface DailyTrainStationService {
     CommonResp<Object> modify(DailyTrainStationSaveReq req);
 
     CommonResp<Object> delete(String ids);
+
+    CommonResp<Object> genDailyStation(String train, Date date);
 }

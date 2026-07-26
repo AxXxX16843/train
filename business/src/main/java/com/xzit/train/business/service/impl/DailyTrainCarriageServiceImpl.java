@@ -8,6 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.xzit.train.business.domain.TrainCarriage;
 import com.xzit.train.business.domain.TrainCarriageExample;
 import com.xzit.train.business.enums.SeatColEnum;
+import com.xzit.train.business.mapper.TrainCarriageMapper;
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.resp.CommonResp;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -31,6 +33,9 @@ public class DailyTrainCarriageServiceImpl implements DailyTrainCarriageService 
 
     @Autowired
     private DailyTrainCarriageMapper dailyTrainCarriageMapper;
+
+    @Autowired
+    private TrainCarriageMapper trainCarriageMapper;
 
     @Override
     public CommonResp<Object> save(DailyTrainCarriageSaveReq req) {
@@ -64,6 +69,7 @@ public class DailyTrainCarriageServiceImpl implements DailyTrainCarriageService 
         if(ObjectUtil.isNotNull(req.getStartTime())){
             criteria.andDateEqualTo(req.getStartTime());
         }
+        dailyTrainCarriageExample.setOrderByClause("date desc, train_code asc, `index` asc");
         PageHelper.startPage(req.getPage(), req.getSize());
         List<DailyTrainCarriage> dailyTrainCarriages = dailyTrainCarriageMapper.selectByExample(dailyTrainCarriageExample);
         PageInfo<DailyTrainCarriage> pageInfo = new PageInfo<>(dailyTrainCarriages);
@@ -92,6 +98,28 @@ public class DailyTrainCarriageServiceImpl implements DailyTrainCarriageService 
         }
         for (Long l : list) {
             dailyTrainCarriageMapper.deleteByPrimaryKey(l);
+        }
+        return new CommonResp<>();
+    }
+
+    @Override
+    public CommonResp<Object> genDailyCarriage(String trainCode, Date date) {
+        DateTime now = DateTime.now();
+        DailyTrainCarriageExample example = new DailyTrainCarriageExample();
+        example.createCriteria().andTrainCodeEqualTo(trainCode).andDateEqualTo(date);
+        dailyTrainCarriageMapper.deleteByExample(example);
+
+        TrainCarriageExample carriageExample = new TrainCarriageExample();
+        carriageExample.createCriteria().andTrainCodeEqualTo(trainCode);
+        List<TrainCarriage> carriages = trainCarriageMapper.selectByExample(carriageExample);
+        for (TrainCarriage carriage : carriages) {
+            DailyTrainCarriage dtc = new DailyTrainCarriage();
+            BeanUtil.copyProperties(carriage, dtc);
+            dtc.setDate(date);
+            dtc.setId(SnowUtil.getSnowflakeNextId());
+            dtc.setCreateTime(now);
+            dtc.setUpdateTime(now);
+            dailyTrainCarriageMapper.insert(dtc);
         }
         return new CommonResp<>();
     }

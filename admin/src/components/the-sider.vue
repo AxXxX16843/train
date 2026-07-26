@@ -40,6 +40,9 @@
         <a-menu-item key="/daily-train-carriage">
           <router-link to="/daily-train-carriage">每日车厢</router-link>
         </a-menu-item>
+        <a-menu-item key="/daily-train-seat">
+          <router-link to="/daily-train-seat">每日座位</router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="batch">
         <template #title>

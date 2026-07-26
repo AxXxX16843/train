@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -47,8 +48,11 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
 
     @Override
     public CommonResp<PageResp<DailyTrainStationQueryResp>> queryList(DailyTrainStationQueryReq req) {
+
+        DailyTrainStationExample example = new DailyTrainStationExample();
+        example.setOrderByClause("date desc");
         PageHelper.startPage(req.getPage(), req.getSize());
-        List<DailyTrainStation> dailyTrainStations = dailyTrainStationMapper.selectByExample(null);
+        List<DailyTrainStation> dailyTrainStations = dailyTrainStationMapper.selectByExample(example);
         PageInfo<DailyTrainStation> pageInfo = new PageInfo<>(dailyTrainStations);
         List<DailyTrainStationQueryResp> dailyTrainStationQueryRespList = BeanUtil.copyToList(dailyTrainStations, DailyTrainStationQueryResp.class);
         PageResp<DailyTrainStationQueryResp> pageResp = new PageResp<>();
@@ -78,4 +82,29 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
         }
         return new CommonResp<>();
     }
+
+    @Override
+    public CommonResp<Object> genDailyStation(String train, Date date) {
+        DateTime now = DateTime.now();
+        DailyTrainStationExample dailyTrainStationExample = new DailyTrainStationExample();
+        DailyTrainStationExample.Criteria criteria = dailyTrainStationExample.createCriteria();
+        criteria.andTrainCodeEqualTo(train).andDateEqualTo(date);
+        dailyTrainStationMapper.deleteByExample(dailyTrainStationExample);
+
+        TrainStationExample trainStationExample = new TrainStationExample();
+        TrainStationExample.Criteria criteria1 = trainStationExample.createCriteria();
+        criteria1.andTrainCodeEqualTo(train);
+        List<TrainStation> trainStations = trainStationMapper.selectByExample(trainStationExample);
+        for (TrainStation trainStation : trainStations) {
+            DailyTrainStation dailyTrainStation = new DailyTrainStation();
+            BeanUtil.copyProperties(trainStation,dailyTrainStation);
+            dailyTrainStation.setCreateTime(now);
+            dailyTrainStation.setUpdateTime(now);
+            dailyTrainStation.setDate(date);
+            dailyTrainStation.setId(SnowUtil.getSnowflakeNextId());
+            dailyTrainStationMapper.insert(dailyTrainStation);
+        }
+        return new CommonResp<>();
+    }
+
 }

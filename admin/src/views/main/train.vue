@@ -8,6 +8,16 @@
         <a-button @click="handleQuery()" style="margin-left: 8px">
           <reload-outlined /> 刷新
         </a-button>
+        <a-date-picker v-model:value="genDate" value-format="YYYY-MM-DD" placeholder="选择日期" style="margin-left: 8px; width: 140px" />
+        <a-popconfirm
+            title="确认生成该日期的每日车次？"
+            @confirm="onGenDaily"
+            ok-text="确认" cancel-text="取消"
+        >
+          <a-button style="margin-left: 8px">
+            <schedule-outlined /> 生成每日车次
+          </a-button>
+        </a-popconfirm>
         <a-popconfirm
             v-show="selectedRowKeys.length > 0"
             title="确认删除选中的车次？"
@@ -108,12 +118,12 @@
 import { defineComponent, ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
-import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons-vue';
+import { PlusOutlined, ReloadOutlined, DeleteOutlined, ScheduleOutlined } from '@ant-design/icons-vue';
 import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
   name: "train-view",
-  components: { PlusOutlined, ReloadOutlined, DeleteOutlined },
+  components: { PlusOutlined, ReloadOutlined, DeleteOutlined, ScheduleOutlined },
   setup() {
     const TRAIN_TYPES = [
       { code: 'G', desc: '高铁' },
@@ -134,6 +144,16 @@ export default defineComponent({
     watch(() => train.value.start, (name) => { if (name) train.value.startPinyin = fillPinyin(name); });
     watch(() => train.value.end,   (name) => { if (name) train.value.endPinyin   = fillPinyin(name); });
     const selectedRowKeys = ref([]);
+    const genDate = ref();
+
+    const onGenDaily = () => {
+      if (!genDate.value) { notification.warning({ description: '请先选择日期' }); return; }
+      axios.get('/business/admin/daily-train/gen-daily/' + genDate.value).then((response) => {
+        let data = response.data;
+        if (data.success) { notification.success({ description: '每日车次生成成功！' }); genDate.value = undefined; }
+        else { notification.error({ description: data.message }); }
+      });
+    };
 
     const onSelectChange = (keys) => {
       selectedRowKeys.value = keys;
@@ -268,7 +288,8 @@ export default defineComponent({
       TRAIN_TYPES, trains, columns, pagination, tablePagination,
       train, visible, loading, isEdit, modalTitle, selectedRowKeys, rowSelection,
       stationList,
-      onAdd, onEdit, handleOk, onDelete, onBatchDelete, onGenSeat, onSelectChange,
+      onAdd, onEdit, handleOk, onDelete, onBatchDelete, onGenSeat, onGenDaily, onSelectChange,
+      genDate,
       handleQuery, handleTableChange,
     };
   },

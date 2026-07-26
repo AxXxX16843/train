@@ -2,6 +2,7 @@ server:
   port: 8001
   servlet:
     context-path: "/member"
+    application-display-name: memberService
 spring:
   datasource:
     username: train

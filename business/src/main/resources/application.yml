@@ -2,6 +2,7 @@ server:
   port: 8002
   servlet:
     context-path: "/business"
+    application-display-name: businessService
 spring:
   datasource:
     username: business

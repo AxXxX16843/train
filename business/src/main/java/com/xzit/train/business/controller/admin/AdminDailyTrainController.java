@@ -8,7 +8,10 @@ import com.xzit.train.business.resp.DailyTrainQueryResp;
 import com.xzit.train.business.service.DailyTrainService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
 
 @RestController
 @RequestMapping("/admin/daily-train")
@@ -33,5 +36,8 @@ public class AdminDailyTrainController {
     public CommonResp<Object> delete(@PathVariable("ids") String ids) {
         return dailyTrainService.delete(ids);
     }
-
+    @GetMapping("/gen-daily/{date}")
+    public CommonResp<Object> genDaily(@PathVariable("date") @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) {
+        return dailyTrainService.genDaily(date);
+    }
 }

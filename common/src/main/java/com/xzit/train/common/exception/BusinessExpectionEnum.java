@@ -10,7 +10,8 @@ public enum BusinessExpectionEnum {
     STATION_NAME_EXIST("该站点名已存在"),
     LIST_IS_NULL("请先选中要删除的乘客"),
     TRAIN_IS_EXIST("该车次已经存在"),
-    CARRIAGE_IS_EXIST("该车厢已存在");
+    CARRIAGE_IS_EXIST("该车厢已存在"),
+    TRAIN_IS_NOT_EXIST("无车次");
     private String desc;
 
     public String getDesc() {

@@ -2,6 +2,7 @@ server:
   port: 8003
   servlet:
     context-path: "/batch"
+    application-display-name: batchService
 spring:
   datasource:
     username: batch
