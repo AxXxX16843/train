@@ -11,8 +11,18 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class ConfirmOrderQueryReq extends PageReq {
+public class ConfirmOrderDoReq extends PageReq {
 
+    private String trainCode;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date date;
 
+    private String startStation;
+
+    private String endStation;
+
+    private Long dailyTrainTicketId;
+
+    private List<ConfirmOrderTicketReq> tickets;
 
 }

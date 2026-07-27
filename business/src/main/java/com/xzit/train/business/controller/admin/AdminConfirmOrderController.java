@@ -1,5 +1,7 @@
 package com.xzit.train.business.controller.admin;
 
+import com.xzit.train.business.req.ConfirmOrderDoReq;
+import com.xzit.train.business.req.DailyTrainTicketQueryReq;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.business.req.ConfirmOrderQueryReq;
@@ -32,6 +34,11 @@ public class AdminConfirmOrderController {
     @DeleteMapping("delete/{ids}")
     public CommonResp<Object> delete(@PathVariable("ids") String ids) {
         return confirmOrderService.delete(ids);
+    }
+
+    @PostMapping("do-confirm")
+    public CommonResp<Object> doConfirm(@Valid @RequestBody ConfirmOrderDoReq req) {
+        return confirmOrderService.doConfirm(req);
     }
 
 }

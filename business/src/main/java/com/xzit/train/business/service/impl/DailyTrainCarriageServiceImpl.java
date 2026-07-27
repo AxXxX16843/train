@@ -125,4 +125,14 @@ public class DailyTrainCarriageServiceImpl implements DailyTrainCarriageService 
         }
         return new CommonResp<>();
     }
+
+    public List<DailyTrainCarriage> getCarriage(String trainCode, Date date, String type){
+        DailyTrainCarriageExample example = new DailyTrainCarriageExample();
+        DailyTrainCarriageExample.Criteria criteria = example.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode);
+        criteria.andDateEqualTo(date);
+        criteria.andSeatTypeEqualTo(type);
+        return dailyTrainCarriageMapper.selectByExample(example);
+    }
+
 }

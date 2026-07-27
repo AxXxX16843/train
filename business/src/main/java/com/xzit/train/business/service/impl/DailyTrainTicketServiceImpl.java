@@ -9,7 +9,6 @@ import com.xzit.train.business.domain.*;
 import com.xzit.train.business.enums.SeatTypeEnum;
 import com.xzit.train.business.enums.TrainTypeEnum;
 import com.xzit.train.business.mapper.TrainStationMapper;
-import com.xzit.train.business.service.DailyTrainSeatService;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.common.util.SnowUtil;
@@ -105,10 +104,10 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
         criteria.andDateEqualTo(date).andTrainCodeEqualTo(trainCode);
         dailyTrainTicketMapper.deleteByExample(dailyTrainTicketExample);
-        int ydz = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.YDZ.getCode());
-        int edz = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.EDZ.getCode());
-        int rw = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.RW.getCode());
-        int yw = dailyTrainSeatService.getCount(trainCode, SeatTypeEnum.YW.getCode());
+        int ydz = dailyTrainSeatService.getCount(date,trainCode, SeatTypeEnum.YDZ.getCode());
+        int edz = dailyTrainSeatService.getCount(date,trainCode, SeatTypeEnum.EDZ.getCode());
+        int rw = dailyTrainSeatService.getCount(date,trainCode, SeatTypeEnum.RW.getCode());
+        int yw = dailyTrainSeatService.getCount(date,trainCode, SeatTypeEnum.YW.getCode());
         TrainStationExample trainStationExample = new TrainStationExample();
         TrainStationExample.Criteria criteria1 = trainStationExample.createCriteria();
         criteria1.andTrainCodeEqualTo(trainCode);
@@ -148,11 +147,23 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
                 dailyTrainTicketMapper.insert(dailyTrainTicket);
             }
         }
-
     }
 
-
-}
+        public DailyTrainTicket selectTickets (String trainCode, String start, String end, Date date){
+            DailyTrainTicketExample dailyTrainTicketExample = new DailyTrainTicketExample();
+            DailyTrainTicketExample.Criteria criteria = dailyTrainTicketExample.createCriteria();
+            criteria.andTrainCodeEqualTo(trainCode);
+            criteria.andDateEqualTo(date);
+            criteria.andStartEqualTo(start);
+            criteria.andEndEqualTo(end);
+            List<DailyTrainTicket> list = dailyTrainTicketMapper.selectByExample(dailyTrainTicketExample);
+            if(ObjectUtil.isNotEmpty(list)) {
+                return list.get(0);
+            }else {
+                return null;
+            }
+        }
+    }
 
 
 

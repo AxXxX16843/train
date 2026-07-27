@@ -125,13 +125,24 @@ public class DailyTrainSeatServiceImpl implements DailyTrainSeatService {
         return new CommonResp<>();
     }
 
-    public int getCount(String trainCode,String type) {
+    public int getCount(Date date, String trainCode,String type) {
         DailyTrainSeatExample example = new DailyTrainSeatExample();
         DailyTrainSeatExample.Criteria criteria = example.createCriteria();
-        criteria.andTrainCodeEqualTo(trainCode).andSeatTypeEqualTo(type);
+        criteria.andTrainCodeEqualTo(trainCode).andSeatTypeEqualTo(type).andDateEqualTo(date);
         if((int)dailyTrainSeatMapper.countByExample(example)==0){
             return -1;
         }
         return (int)dailyTrainSeatMapper.countByExample(example);
     }
+
+    public List<DailyTrainSeat> getSeat(String trainCode, Date date,Integer index){
+        DailyTrainSeatExample example = new DailyTrainSeatExample();
+        example.setOrderByClause("carriage_seat_index asc");
+        DailyTrainSeatExample.Criteria criteria = example.createCriteria();
+        criteria.andTrainCodeEqualTo(trainCode);
+        criteria.andDateEqualTo(date);
+        criteria.andCarriageIndexEqualTo(index);
+        return dailyTrainSeatMapper.selectByExample(example);
+    }
+
 }

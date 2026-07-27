@@ -46,6 +46,9 @@
         <a-menu-item key="/daily-train-ticket">
           <router-link to="/daily-train-ticket">每日余票</router-link>
         </a-menu-item>
+        <a-menu-item key="/confirm-order">
+          <router-link to="/confirm-order">订单管理</router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="batch">
         <template #title>

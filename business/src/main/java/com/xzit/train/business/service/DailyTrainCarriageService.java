@@ -19,4 +19,5 @@ public interface DailyTrainCarriageService {
     CommonResp<Object> delete(String ids);
 
     CommonResp<Object> genDailyCarriage(String trainCode, Date date);
+
 }

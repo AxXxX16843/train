@@ -12,7 +12,8 @@ public enum BusinessExpectionEnum {
     TRAIN_IS_EXIST("该车次已经存在"),
     CARRIAGE_IS_EXIST("该车厢已存在"),
     TRAIN_IS_NOT_EXIST("无车次"),
-    TYPE_IS_EMPTY("没有这种类型的车次");
+    TYPE_IS_EMPTY("没有这种类型的车次"),
+    TICKET_COUNT_ERROR("余票不足");
     private String desc;
 
     public String getDesc() {

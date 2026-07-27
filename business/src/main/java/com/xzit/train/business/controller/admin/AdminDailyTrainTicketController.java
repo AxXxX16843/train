@@ -34,4 +34,6 @@ public class AdminDailyTrainTicketController {
         return dailyTrainTicketService.delete(ids);
     }
 
+
+
 }

@@ -26,8 +26,8 @@
         <div v-for="s in availSeats" :key="s.key" class="seat-card">
           <div class="seat-type">{{ s.label }}</div>
           <div class="seat-price">¥{{ ticket[s.priceKey] }}</div>
-          <a-tag v-if="ticket[s.key] > 50" color="green">有票</a-tag>
-          <a-tag v-else-if="ticket[s.key] > 0" color="orange">余{{ ticket[s.key] }}张</a-tag>
+          <a-tag v-if="ticket[s.countKey] > 50" color="green">有票</a-tag>
+          <a-tag v-else-if="ticket[s.countKey] > 0" color="orange">余{{ ticket[s.countKey] }}张</a-tag>
           <a-tag v-else color="red">售罄</a-tag>
         </div>
       </div>
@@ -71,7 +71,51 @@
         </div>
         <div v-else class="ticket-empty">勾选乘车人后选择席别</div>
       </div>
+      <div style="text-align:center;margin-top:16px">
+        <a-button type="primary" size="large" @click="onShowConfirm" :disabled="orderItems.length === 0">
+          提交订单 ({{ orderItems.length }}张)
+        </a-button>
+      </div>
     </a-card>
+
+    <!-- 确认订单（含选座） -->
+    <a-modal v-model:visible="confirmVisible" title="确认订单" @ok="onConfirmOk" ok-text="确认下单" cancel-text="取消" width="660px">
+      <div class="confirm-train">{{ ticket?.trainCode }}次 {{ ticket?.start }} — {{ ticket?.end }}</div>
+      <div class="confirm-date">{{ formatDate(ticket?.date) }} {{ dayOfWeek(ticket?.date) }}</div>
+      <a-divider style="margin:8px 0" />
+      <div v-for="(item, idx) in orderItems" :key="idx" class="confirm-item">
+        <span class="ci-name">{{ item.name }}</span>
+        <span class="ci-type">{{ PASSENGER_TYPES.find(t=>t.code===item.passengerType)?.desc }}</span>
+        <span class="ci-seat">{{ SEAT_MAP[item.seatType] }} ¥{{ seatPrice(item.seatType) }}</span>
+        <span class="ci-id">{{ item.idCard }}</span>
+      </div>
+
+      <div v-if="canSelectSeat" style="margin-top:8px">
+        <a-checkbox v-model:checked="showSeatSelect">选择座位</a-checkbox>
+      </div>
+      <template v-if="canSelectSeat && showSeatSelect">
+        <a-divider style="margin:12px 0">选座参考（{{ SEAT_MAP[orderItems[0]?.seatType] }}）</a-divider>
+        <div class="seat-ref">
+          <div class="seat-ref-row" v-for="r in seatRefRows" :key="r">
+            <span class="seat-ref-label">{{ r }}排</span>
+            <template v-for="(c, ci) in seatCols" :key="c">
+              <span v-if="ci === 0" class="seat-tag">窗</span>
+              <div class="seat-ref-box" @click="onSeatRefClick(r, c)"
+                :class="{ picked: seatItems.some(i => i.seat === r+c) }">{{ c }}</div>
+              <span v-if="ci === firstAisle" class="seat-tag aisle">过道</span>
+              <span v-if="ci === secondAisle" class="seat-tag aisle">过道</span>
+              <span v-if="ci === seatCols.length - 1" class="seat-tag">窗</span>
+            </template>
+          </div>
+        </div>
+        <div class="pick-list" style="margin-top:8px">
+          <div v-for="(item, idx) in seatItems" :key="idx" class="pick-item" :class="{ active: pickIdx === idx }" @click="pickIdx = idx">
+            <span class="pick-name">{{ item.name }}</span>
+            <span class="pick-seat">{{ item.seat || '未选' }}</span>
+          </div>
+        </div>
+      </template>
+    </a-modal>
   </div>
   <div v-else class="order-empty">
     <a-empty description="暂无车票信息" />
@@ -82,6 +126,7 @@
 import { defineComponent, ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { notification } from 'ant-design-vue';
 
 const PASSENGER_TYPES = [
   { code: '1', desc: '成人' },
@@ -90,11 +135,13 @@ const PASSENGER_TYPES = [
 ];
 
 const SEAT_LIST = [
-  { key: 'ydz', label: '一等座', priceKey: 'ydzPrice' },
-  { key: 'edz', label: '二等座', priceKey: 'edzPrice' },
-  { key: 'rw', label: '软卧', priceKey: 'rwPrice' },
-  { key: 'yw', label: '硬卧', priceKey: 'ywPrice' },
+  { key: '1', label: '一等座', priceKey: 'ydzPrice', countKey: 'ydz' },
+  { key: '2', label: '二等座', priceKey: 'edzPrice', countKey: 'edz' },
+  { key: '3', label: '软卧', priceKey: 'rwPrice', countKey: 'rw' },
+  { key: '4', label: '硬卧', priceKey: 'ywPrice', countKey: 'yw' },
 ];
+
+const SEAT_MAP = { '1': '一等座', '2': '二等座', '3': '软卧', '4': '硬卧' };
 
 export default defineComponent({
   name: "order-view",
@@ -104,21 +151,29 @@ export default defineComponent({
     const passengers = ref([]);
     const selectedKeys = ref([]);
     const orderItems = ref([]);
+    const confirmVisible = ref(false);
+    const showSeatSelect = ref(false);
 
     const availSeats = computed(() => {
       if (!ticket.value) return [];
       return SEAT_LIST.filter(s => {
-        const v = ticket.value[s.key];
+        const v = ticket.value[s.countKey];
         return v > 0 || v > 50;
       });
     });
 
     const seatRemain = (key) => {
       if (!ticket.value) return 0;
-      const total = ticket.value[key];
+      const seat = SEAT_LIST.find(s => s.key === key);
+      const total = seat ? ticket.value[seat.countKey] : 0;
       const used = orderItems.value.filter(i => i.seatType === key).length;
       if (total > 50) return total;
       return Math.max(0, total - used);
+    };
+
+    const seatPrice = (key) => {
+      const s = SEAT_LIST.find(s => s.key === key);
+      return s && ticket.value ? ticket.value[s.priceKey] : '—';
     };
 
     const calcDuration = (startTime, endTime) => {
@@ -157,6 +212,84 @@ export default defineComponent({
       selectedKeys.value = keys;
     };
 
+    const seatItems = ref([]);
+    const pickIdx = ref(0);
+    const SEAT_COLS = { '1': ['A','C','D','F'], '2': ['A','B','C','D','F'], '3': ['A','B','C','D'], '4': ['A','B','C','D','E','F'] };
+
+    const canSelectSeat = computed(() => {
+      if (orderItems.value.length === 0) return false;
+      const firstType = orderItems.value[0].seatType;
+      const sameType = orderItems.value.every(i => i.seatType === firstType);
+      if (!sameType) return false;
+      const remain = seatRemain(firstType);
+      return remain >= 10 && remain >= orderItems.value.length;
+    });
+
+    const seatRefRows = computed(() => orderItems.value.length >= 2 ? [1, 2] : [1]);
+
+    const onShowConfirm = () => {
+      showSeatSelect.value = false;
+      if (canSelectSeat.value) {
+        seatItems.value = orderItems.value.map(i => ({ ...i, seat: '' }));
+        pickIdx.value = 0;
+      } else {
+        seatItems.value = [];
+      }
+      confirmVisible.value = true;
+    };
+
+    const onSeatRefClick = (row, col) => {
+      if (!canSelectSeat.value || seatItems.value.length === 0) return;
+      const pos = row + col;
+      const existed = seatItems.value.findIndex(i => i.seat === pos);
+      const cur = seatItems.value[pickIdx.value];
+      if (existed >= 0) {
+        if (existed === pickIdx.value) seatItems.value[pickIdx.value].seat = '';
+      } else if (!cur.seat) {
+        seatItems.value[pickIdx.value].seat = pos;
+        if (pickIdx.value < seatItems.value.length - 1) pickIdx.value++;
+      }
+    };
+
+    const seatCols = computed(() => {
+      if (orderItems.value.length === 0) return [];
+      return SEAT_COLS[orderItems.value[0].seatType] || [];
+    });
+    const firstAisle = computed(() => {
+      const cols = seatCols.value;
+      if (cols.length <= 4) return 1; // after C (index 1), between C-D
+      return 1; // after B (index 1), between B-C
+    });
+    const secondAisle = computed(() => -1);
+
+    const onConfirmOk = () => {
+      const useSeat = canSelectSeat.value && showSeatSelect.value;
+      const source = useSeat ? seatItems.value : orderItems.value;
+      axios.post('/business/admin/confirm-order/do-confirm', {
+        trainCode: ticket.value.trainCode,
+        date: ticket.value.date,
+        startStation: ticket.value.start,
+        endStation: ticket.value.end,
+        dailyTrainTicketId: ticket.value.id,
+        tickets: source.map(i => ({
+          trainCode: ticket.value.trainCode,
+          date: ticket.value.date,
+          seatType: i.seatType,
+          passengerCard: i.idCard,
+          passengerType: i.passengerType,
+          passengerId: String(i.passengerId),
+          seat: useSeat ? (i.seat || '') : '',
+        })),
+      }).then(res => {
+        if (res.data.success) {
+          notification.success({ description: '下单成功！' });
+          confirmVisible.value = false;
+        } else {
+          notification.error({ description: res.data.message });
+        }
+      });
+    };
+
     onMounted(() => {
       const raw = route.query.d;
       if (raw) {
@@ -167,8 +300,10 @@ export default defineComponent({
       });
     });
 
-    return { ticket, passengers, selectedKeys, orderItems, availSeats, seatRemain, calcDuration,
-      PASSENGER_TYPES, formatDate, dayOfWeek, onPassengerChange };
+    return { ticket, passengers, selectedKeys, orderItems, availSeats, seatRemain, seatPrice, calcDuration,
+      confirmVisible, showSeatSelect, seatItems, seatCols, seatRefRows, pickIdx, canSelectSeat, firstAisle, secondAisle, SEAT_MAP,
+      onSeatRefClick,
+      PASSENGER_TYPES, formatDate, dayOfWeek, onPassengerChange, onShowConfirm, onConfirmOk };
   },
 });
 </script>
@@ -217,4 +352,26 @@ export default defineComponent({
 .th-id, .td-id { width: 180px; text-align: right; }
 .td-id { color: #666; }
 .ticket-empty { text-align: center; padding: 24px; color: #c0c0c0; font-size: 13px; }
+.confirm-train { font-size: 16px; font-weight: 600; }
+.confirm-date { font-size: 13px; color: #888; margin-top: 2px; }
+.confirm-item { display: flex; gap: 16px; padding: 6px 0; border-bottom: 1px dashed #f0f0f0; font-size: 13px; }
+.confirm-item:last-child { border-bottom: none; }
+.ci-name { width: 70px; font-weight: 600; }
+.ci-type { width: 50px; }
+.ci-seat { flex: 1; color: #e65c41; }
+.ci-id { width: 180px; color: #666; text-align: right; }
+/* 选座 */
+.seat-ref { display: flex; flex-direction: column; align-items: center; margin: 4px 0; }
+.seat-ref-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.seat-ref-label { width: 36px; font-size: 12px; color: #666; flex-shrink: 0; }
+.seat-ref-box { width: 44px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 13px; border: 1px solid #d9d9d9; border-radius: 4px; cursor: pointer; background: #fff; color: #333; transition: all 0.15s; }
+.seat-ref-box:hover { border-color: #1677ff; background: #e6f4ff; }
+.seat-ref-box.picked { background: #1677ff; color: #fff; border-color: #1677ff; }
+.seat-tag { font-size: 11px; color: #999; width: 20px; text-align: center; flex-shrink: 0; }
+.seat-tag.aisle { width: 28px; }
+.pick-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick-item { padding: 4px 12px; border-radius: 6px; border: 1px solid #e8e8e8; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.pick-item:hover, .pick-item.active { border-color: #1677ff; background: #e6f4ff; }
+.pick-name { font-weight: 600; margin-right: 8px; }
+.pick-seat { color: #1677ff; }
 </style>
