@@ -1,5 +1,6 @@
 package com.xzit.train.business.controller.admin;
 
+import com.xzit.train.common.feign.MemberFeignClient;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.business.req.DailyTrainTicketQueryReq;
@@ -16,6 +17,9 @@ public class AdminDailyTrainTicketController {
 
     @Autowired
     private DailyTrainTicketService dailyTrainTicketService;
+
+    @Autowired
+    private MemberFeignClient memberFeignClient;
 
     @PostMapping("save")
     public CommonResp<Object> save(@Valid @RequestBody DailyTrainTicketSaveReq req) {
@@ -34,6 +38,10 @@ public class AdminDailyTrainTicketController {
         return dailyTrainTicketService.delete(ids);
     }
 
-
+    @GetMapping("ticket-list")
+    public CommonResp<PageResp> ticketList(@RequestParam(defaultValue = "1") Integer page,
+                                           @RequestParam(defaultValue = "10") Integer size) {
+        return memberFeignClient.ticketList(page, size);
+    }
 
 }

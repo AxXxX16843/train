@@ -49,6 +49,9 @@
         <a-menu-item key="/confirm-order">
           <router-link to="/confirm-order">订单管理</router-link>
         </a-menu-item>
+        <a-menu-item key="/ticket-manage">
+          <router-link to="/ticket-manage">车票管理</router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="batch">
         <template #title>

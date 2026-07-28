@@ -14,9 +14,12 @@
       @change="handleTableChange" :loading="loading" rowKey="id" size="middle">
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'status'">
-          <a-tag v-if="record.status === 'PENDING'" color="orange">待处理</a-tag>
-          <a-tag v-else-if="record.status === 'SUCCESS'" color="green">已成交</a-tag>
-          <a-tag v-else-if="record.status === 'CANCEL'" color="default">已取消</a-tag>
+          <a-tag v-if="record.status === 'P'" color="orange"><sync-outlined :spin="true" /> 处理中</a-tag>
+          <a-tag v-else-if="record.status === 'S'" color="green"><check-circle-outlined /> 已成交</a-tag>
+          <a-tag v-else-if="record.status === 'F'" color="red"><close-circle-outlined /> 失败</a-tag>
+          <a-tag v-else-if="record.status === 'E'" color="purple"><exclamation-circle-outlined /> 无票</a-tag>
+          <a-tag v-else-if="record.status === 'C'" color="default"><stop-outlined /> 已取消</a-tag>
+          <a-tag v-else-if="record.status === 'I'" color="blue"><clock-circle-outlined /> 初始</a-tag>
           <span v-else>{{ record.status }}</span>
         </template>
       </template>
@@ -28,11 +31,11 @@
 import { defineComponent, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
-import { ReloadOutlined } from '@ant-design/icons-vue';
+import { ReloadOutlined, SyncOutlined, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, StopOutlined, ClockCircleOutlined } from '@ant-design/icons-vue';
 
 export default defineComponent({
   name: "confirm-order-view",
-  components: { ReloadOutlined },
+  components: { ReloadOutlined, SyncOutlined, CheckCircleOutlined, CloseCircleOutlined, ExclamationCircleOutlined, StopOutlined, ClockCircleOutlined },
   setup() {
     const loading = ref(false);
     const list = ref([]);

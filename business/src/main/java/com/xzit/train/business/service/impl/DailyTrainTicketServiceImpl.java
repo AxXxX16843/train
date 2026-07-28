@@ -116,11 +116,11 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
             TrainStation trainStationStart = trainStations.get(i);
             BigDecimal km = BigDecimal.ZERO;
             for (int j = i + 1; j < trainStations.size(); j++) {
-                BigDecimal add = km.add(trainStations.get(j).getKm());
-                BigDecimal ydzPrice = add.multiply(SeatTypeEnum.YDZ.getPrice()).multiply(type.getPriceRate());
-                BigDecimal edzPrice = add.multiply(SeatTypeEnum.EDZ.getPrice()).multiply(type.getPriceRate());
-                BigDecimal ywPride = add.multiply(SeatTypeEnum.RW.getPrice()).multiply(type.getPriceRate());
-                BigDecimal rwPrice = add.multiply(SeatTypeEnum.YW.getPrice()).multiply(type.getPriceRate());
+                km = km.add(trainStations.get(j).getKm());
+                BigDecimal ydzPrice = km.multiply(SeatTypeEnum.YDZ.getPrice()).multiply(type.getPriceRate());
+                BigDecimal edzPrice = km.multiply(SeatTypeEnum.EDZ.getPrice()).multiply(type.getPriceRate());
+                BigDecimal rwPride = km.multiply(SeatTypeEnum.RW.getPrice()).multiply(type.getPriceRate());
+                BigDecimal ywPrice = km.multiply(SeatTypeEnum.YW.getPrice()).multiply(type.getPriceRate());
                 TrainStation trainStationEnd = trainStations.get(j);
                 DailyTrainTicket dailyTrainTicket = new DailyTrainTicket();
                 dailyTrainTicket.setId(SnowUtil.getSnowflakeNextId());
@@ -139,9 +139,9 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
                 dailyTrainTicket.setEdz(edz);
                 dailyTrainTicket.setEdzPrice(edzPrice);
                 dailyTrainTicket.setRw(rw);
-                dailyTrainTicket.setRwPrice(rwPrice);
+                dailyTrainTicket.setRwPrice(rwPride);
                 dailyTrainTicket.setYw(yw);
-                dailyTrainTicket.setYwPrice(ywPride);
+                dailyTrainTicket.setYwPrice(ywPrice);
                 dailyTrainTicket.setCreateTime(now);
                 dailyTrainTicket.setUpdateTime(now);
                 dailyTrainTicketMapper.insert(dailyTrainTicket);

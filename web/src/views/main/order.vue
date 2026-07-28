@@ -277,7 +277,8 @@ export default defineComponent({
           seatType: i.seatType,
           passengerCard: i.idCard,
           passengerType: i.passengerType,
-          passengerId: String(i.passengerId),
+          passengerId: i.passengerId,
+          passengerName: i.name,
           seat: useSeat ? (i.seat || '') : '',
         })),
       }).then(res => {

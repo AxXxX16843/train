@@ -166,7 +166,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             }
         }
         reduceTicket(tickets, dailyTrainTicket);
-        confirmOrderAfterService.updateSeat(dailyTrainTicket,fineSeatList);
+        confirmOrderAfterService.updateSeat(dailyTrainTicket,fineSeatList,tickets,confirmOrder);
         return new CommonResp<>();
     }
 

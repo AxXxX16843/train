@@ -18,11 +18,13 @@ public class ConfirmOrderTicketReq extends PageReq {
 
     private String seatType;
 
+    private String passengerName;
+
     private String passengerCard;
 
     private String passengerType;
 
-    private String passengerId;
+    private Long passengerId;
 
     private String seat;
 

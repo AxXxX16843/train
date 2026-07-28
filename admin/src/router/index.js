@@ -46,6 +46,9 @@ const routes = [
     },{
       path: 'confirm-order',
       component: () => import('../views/main/confirm-order.vue'),
+    },{
+      path: 'ticket-manage',
+      component: () => import('../views/main/ticket-manage.vue'),
     },]
   }
 ]

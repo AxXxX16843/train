@@ -42,6 +42,6 @@
                              type="XMLMAPPER"/>
 
 <!--        <table tableName="member" domainObjectName="Member"/>-->
-                <table tableName="confirm_order" domainObjectName="ConfirmOrder"/>
+                <table tableName="confirm_order" domainObjectName="Confirm"/>
     </context>
 </generatorConfiguration>
