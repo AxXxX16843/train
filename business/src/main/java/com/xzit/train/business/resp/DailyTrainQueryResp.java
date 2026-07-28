@@ -6,8 +6,10 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class DailyTrainQueryResp {
+public class DailyTrainQueryResp implements Serializable {
 
     @JsonSerialize(using= ToStringSerializer.class)
     private Long id;

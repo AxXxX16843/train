@@ -64,6 +64,7 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { ReloadOutlined } from '@ant-design/icons-vue';
+import cache from '@/utils/cache';
 
 const TICKET_COLS = ['ydz', 'edz', 'rw', 'yw'];
 
@@ -131,7 +132,8 @@ export default defineComponent({
     };
 
     onMounted(() => {
-      axios.get('/business/admin/station/query-all').then(res => { if (res.data.success) stationList.value = res.data.content; });
+      const cached = cache.get('station_all'); if (cached) { stationList.value = cached; return; }
+      axios.get('/business/admin/station/query-all').then(res => { if (res.data.success) { stationList.value = res.data.content; cache.set('station_all', res.data.content); } });
     });
 
     return {

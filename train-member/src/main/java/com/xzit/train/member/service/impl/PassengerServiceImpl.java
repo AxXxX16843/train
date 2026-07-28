@@ -19,6 +19,8 @@ import com.xzit.train.member.req.PassengerSaveReq;
 import com.xzit.train.member.resp.PassengerQueryResp;
 import com.xzit.train.member.service.PassengerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -31,6 +33,7 @@ public class PassengerServiceImpl implements PassengerService {
     private PassengerMapper passengerMapper;
 
     @Override
+    @CacheEvict(value = "PassengerServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> save(PassengerSaveReq req) {
         Long memberId = MemberContext.getMember().getId();
         DateTime now = DateTime.now();
@@ -50,6 +53,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    @Cacheable(value = "PassengerServiceImpl.queryList")
     public CommonResp<PageResp<PassengerQueryResp>> queryList(PassengerQueryReq req) {
         Long memberId = req.getId();
         PassengerExample passengerExample = new PassengerExample();
@@ -68,6 +72,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    @CacheEvict(value = "PassengerServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> modify(PassengerSaveReq req) {
         DateTime now = DateTime.now();
         Passenger passenger = new Passenger();
@@ -78,6 +83,7 @@ public class PassengerServiceImpl implements PassengerService {
     }
 
     @Override
+    @CacheEvict(value = "PassengerServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (ObjectUtil.isEmpty(list)) {

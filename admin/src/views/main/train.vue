@@ -119,6 +119,7 @@ import { defineComponent, ref, onMounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { PlusOutlined, ReloadOutlined, DeleteOutlined, ScheduleOutlined } from '@ant-design/icons-vue';
+import cache from '@/utils/cache';
 import { pinyin } from 'pinyin-pro';
 
 export default defineComponent({
@@ -279,9 +280,17 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
-      axios.get('/business/admin/station/query-all').then((res) => {
-        if (res.data.success) stationList.value = res.data.content;
-      });
+      const cachedStation = cache.get('station_all');
+      if (cachedStation) {
+        stationList.value = cachedStation;
+      } else {
+        axios.get('/business/admin/station/query-all').then((res) => {
+          if (res.data.success) {
+            stationList.value = res.data.content;
+            cache.set('station_all', res.data.content);
+          }
+        });
+      }
     });
 
     return {

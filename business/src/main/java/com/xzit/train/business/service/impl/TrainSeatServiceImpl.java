@@ -22,6 +22,8 @@ import com.xzit.train.business.req.TrainSeatSaveReq;
 import com.xzit.train.business.resp.TrainSeatQueryResp;
 import com.xzit.train.business.service.TrainSeatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     private TrainMapper trainMapper;
 
     @Override
+    @CacheEvict(value = "TrainSeatServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> save(TrainSeatSaveReq req) {
         DateTime now = DateTime.now();
         TrainSeat trainSeat = BeanUtil.copyProperties(req, TrainSeat.class);
@@ -51,6 +54,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     }
 
     @Override
+    @Cacheable(value = "TrainSeatServiceImpl.queryList")
     public CommonResp<PageResp<TrainSeatQueryResp>> queryList(TrainSeatQueryReq req) {
 
         TrainSeatExample trainSeatExample = new TrainSeatExample();
@@ -69,6 +73,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     }
 
     @Override
+    @CacheEvict(value = "TrainSeatServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> modify(TrainSeatSaveReq req) {
         DateTime now = DateTime.now();
         TrainSeat trainSeat = new TrainSeat();
@@ -79,6 +84,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     }
 
     @Override
+    @CacheEvict(value = "TrainSeatServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (list.isEmpty()) {
@@ -91,6 +97,7 @@ public class TrainSeatServiceImpl implements TrainSeatService {
     }
 
     @Override
+    @CacheEvict(value = "TrainSeatServiceImpl.queryList", allEntries = true)
     @Transactional
     public CommonResp<Object> genSeat(String trainCode) {
         DateTime now = DateTime.now();

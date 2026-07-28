@@ -55,6 +55,7 @@ import { defineComponent, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { ReloadOutlined } from '@ant-design/icons-vue';
+import cache from '@/utils/cache';
 
 const TICKET_COLS = ['ydz', 'edz', 'rw', 'yw'];
 
@@ -114,8 +115,10 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
-      axios.get('/business/admin/train/query-all').then(res => { if (res.data.success) trainCodeList.value = res.data.content; });
-      axios.get('/business/admin/station/query-all').then(res => { if (res.data.success) stationList.value = res.data.content; });
+      const cachedTrain = cache.get('train_all'); if (cachedTrain) { trainCodeList.value = cachedTrain; }
+      else { axios.get('/business/admin/train/query-all').then(res => { if (res.data.success) { trainCodeList.value = res.data.content; cache.set('train_all', res.data.content); } }); }
+      const cachedStation = cache.get('station_all'); if (cachedStation) { stationList.value = cachedStation; }
+      else { axios.get('/business/admin/station/query-all').then(res => { if (res.data.success) { stationList.value = res.data.content; cache.set('station_all', res.data.content); } }); }
     });
 
     return {

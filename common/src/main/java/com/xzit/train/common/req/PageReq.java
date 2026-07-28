@@ -4,8 +4,10 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class PageReq {
+public class PageReq implements Serializable {
     @NotNull(message = "页数不能为空")
     private int page;
     @NotNull(message = "页面大小不能为空")

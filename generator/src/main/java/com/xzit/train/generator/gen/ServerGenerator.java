@@ -58,10 +58,10 @@ public class ServerGenerator {
         param.put("typeSet",javaTypes);
         System.out.println(param);
         gen(ModuleServicePath, Domain, param,"saveReq","req");
-        gen(ModuleServicePath, Domain, param,"adminController","controller","Admin"+Domain+"Controller");
-        gen(ModuleServicePath, Domain, param,"service","service");
-        gen(ModuleServicePath, Domain, param,"serviceImpl","service\\impl");
-        gen(ModuleServicePath, Domain, param,"queryReq","req");
+//        gen(ModuleServicePath, Domain, param,"adminController","controller","Admin"+Domain+"Controller");
+//        gen(ModuleServicePath, Domain, param,"service","service");
+//        gen(ModuleServicePath, Domain, param,"serviceImpl","service\\impl");
+//        gen(ModuleServicePath, Domain, param,"queryReq","req");
         gen(ModuleServicePath, Domain, param,"queryResp","resp");
 
     }

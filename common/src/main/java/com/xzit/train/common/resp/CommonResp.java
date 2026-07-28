@@ -1,6 +1,8 @@
 package com.xzit.train.common.resp;
 
-public class CommonResp<T> {
+import java.io.Serializable;
+
+public class CommonResp<T> implements Serializable {
 
     /**
      * 业务上的成功或失败

@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class TrainStationQueryResp {
+public class TrainStationQueryResp implements Serializable {
 
     @JsonSerialize(using= ToStringSerializer.class)
     private Long id;

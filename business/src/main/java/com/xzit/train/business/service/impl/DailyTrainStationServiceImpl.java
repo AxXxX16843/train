@@ -16,6 +16,8 @@ import com.xzit.train.business.req.DailyTrainStationSaveReq;
 import com.xzit.train.business.resp.DailyTrainStationQueryResp;
 import com.xzit.train.business.service.DailyTrainStationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
     private TrainStationMapper trainStationMapper;
 
     @Override
+    @CacheEvict(value = "DailyTrainStationServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> save(DailyTrainStationSaveReq req) {
         TrainStationExample trainStationExample = new TrainStationExample();
         TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
@@ -48,6 +51,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
     }
 
     @Override
+    @Cacheable(value = "DailyTrainStationServiceImpl.queryList")
     public CommonResp<PageResp<DailyTrainStationQueryResp>> queryList(DailyTrainStationQueryReq req) {
 
         DailyTrainStationExample example = new DailyTrainStationExample();
@@ -63,6 +67,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
     }
 
     @Override
+    @CacheEvict(value = "DailyTrainStationServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> modify(DailyTrainStationSaveReq req) {
         DateTime now = DateTime.now();
         DailyTrainStation dailyTrainStation = new DailyTrainStation();
@@ -73,6 +78,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
     }
 
     @Override
+    @CacheEvict(value = "DailyTrainStationServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (list.isEmpty()) {
@@ -84,6 +90,7 @@ public class DailyTrainStationServiceImpl implements DailyTrainStationService {
         return new CommonResp<>();
     }
 
+    @CacheEvict(value = "DailyTrainStationServiceImpl.queryList", allEntries = true)
     @Transactional
     @Override
     public CommonResp<Object> genDailyStation(String train, Date date) {

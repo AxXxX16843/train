@@ -20,6 +20,8 @@ import com.xzit.train.business.req.TrainCarriageSaveReq;
 import com.xzit.train.business.resp.TrainCarriageQueryResp;
 import com.xzit.train.business.service.TrainCarriageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -32,6 +34,7 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
     private TrainCarriageMapper trainCarriageMapper;
 
     @Override
+    @CacheEvict(value = "TrainCarriageServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> save(TrainCarriageSaveReq req) {
 
         TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
@@ -56,6 +59,7 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
     }
 
     @Override
+    @Cacheable(value = "TrainCarriageServiceImpl.queryList")
     public CommonResp<PageResp<TrainCarriageQueryResp>> queryList(TrainCarriageQueryReq req) {
 
         TrainCarriageExample trainCarriageExample = new TrainCarriageExample();
@@ -74,6 +78,7 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
     }
 
     @Override
+    @CacheEvict(value = "TrainCarriageServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> modify(TrainCarriageSaveReq req) {
         DateTime now = DateTime.now();
         TrainCarriage trainCarriage = new TrainCarriage();
@@ -84,6 +89,7 @@ public class TrainCarriageServiceImpl implements TrainCarriageService {
     }
 
     @Override
+    @CacheEvict(value = "TrainCarriageServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (list.isEmpty()) {

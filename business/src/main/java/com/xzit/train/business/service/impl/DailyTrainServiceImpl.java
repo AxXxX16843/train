@@ -24,6 +24,8 @@ import com.xzit.train.business.req.DailyTrainSaveReq;
 import com.xzit.train.business.resp.DailyTrainQueryResp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,7 @@ public class DailyTrainServiceImpl implements DailyTrainService {
 
 
     @Override
+    @CacheEvict(value = "DailyTrainServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> save(DailyTrainSaveReq req) {
         TrainExample example = new TrainExample();
         TrainExample.Criteria criteria = example.createCriteria();
@@ -70,6 +73,7 @@ public class DailyTrainServiceImpl implements DailyTrainService {
     }
 
     @Override
+    @Cacheable(value = "DailyTrainServiceImpl.queryList")
     public CommonResp<PageResp<DailyTrainQueryResp>> queryList(DailyTrainQueryReq req) {
 
         DailyTrainExample dailyTrainExample = new DailyTrainExample();
@@ -92,6 +96,7 @@ public class DailyTrainServiceImpl implements DailyTrainService {
     }
 
     @Override
+    @CacheEvict(value = "DailyTrainServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> modify(DailyTrainSaveReq req) {
         DateTime now = DateTime.now();
         DailyTrain dailyTrain = new DailyTrain();
@@ -102,6 +107,7 @@ public class DailyTrainServiceImpl implements DailyTrainService {
     }
 
     @Override
+    @CacheEvict(value = "DailyTrainServiceImpl.queryList", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (list.isEmpty()) {
@@ -114,6 +120,7 @@ public class DailyTrainServiceImpl implements DailyTrainService {
     }
 
 
+    @CacheEvict(value = "DailyTrainServiceImpl.queryList", allEntries = true)
     @Transactional
     @Override
     public CommonResp<Object> genDaily(Date date) {

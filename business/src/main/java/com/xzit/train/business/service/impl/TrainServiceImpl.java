@@ -21,6 +21,8 @@ import com.xzit.train.business.req.TrainSaveReq;
 import com.xzit.train.business.resp.TrainQueryResp;
 import com.xzit.train.business.service.TrainService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -36,6 +38,7 @@ public class TrainServiceImpl implements TrainService {
 
 
     @Override
+    @CacheEvict(value = "TrainServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> save(TrainSaveReq req) {
         TrainExample trainExample = new TrainExample();
         TrainExample.Criteria criteria = trainExample.createCriteria();
@@ -66,6 +69,7 @@ public class TrainServiceImpl implements TrainService {
     }
 
     @Override
+    @CacheEvict(value = "TrainServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> modify(TrainSaveReq req) {
         DateTime now = DateTime.now();
         Train train = new Train();
@@ -76,6 +80,7 @@ public class TrainServiceImpl implements TrainService {
     }
 
     @Override
+    @CacheEvict(value = "TrainServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (list.isEmpty()) {
@@ -92,6 +97,7 @@ public class TrainServiceImpl implements TrainService {
     }
 
     @Override
+    @Cacheable(value = "TrainServiceImpl.queryAll")
     public CommonResp<List<TrainQueryResp>> queryAll() {
         TrainExample trainExample = new TrainExample();
         trainExample.setOrderByClause("code desc");

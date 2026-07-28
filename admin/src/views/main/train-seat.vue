@@ -40,6 +40,7 @@ import { defineComponent, ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { ReloadOutlined } from '@ant-design/icons-vue';
+import cache from '@/utils/cache';
 
 export default defineComponent({
   name: "train-seat-view",
@@ -102,9 +103,10 @@ export default defineComponent({
 
     onMounted(() => {
       handleQuery({ page: 1, size: pagination.value.pageSize });
-      axios.get('/business/admin/train/query-all').then((res) => {
-        if (res.data.success) trainCodeList.value = res.data.content;
-      });
+      const cached = cache.get('train_all'); if (cached) { trainCodeList.value = cached; }
+      else { axios.get('/business/admin/train/query-all').then((res) => {
+        if (res.data.success) { trainCodeList.value = res.data.content; cache.set('train_all', res.data.content); }
+      }); }
     });
 
     return {

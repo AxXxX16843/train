@@ -19,6 +19,8 @@ import com.xzit.train.business.req.StationSaveReq;
 import com.xzit.train.business.resp.StationQueryResp;
 import com.xzit.train.business.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -31,6 +33,7 @@ public class StationServiceImpl implements StationService {
     private StationMapper stationMapper;
 
     @Override
+    @CacheEvict(value = "StationServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> save(StationSaveReq req) {
         StationExample example = new StationExample();
         example.createCriteria().andNameEqualTo(req.getName());
@@ -66,6 +69,7 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
+    @CacheEvict(value = "StationServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> modify(StationSaveReq req) {
         DateTime now = DateTime.now();
         Station station = new Station();
@@ -76,6 +80,7 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
+    @CacheEvict(value = "StationServiceImpl.queryAll", allEntries = true)
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
         if (ObjectUtil.isEmpty(list)) {
@@ -88,6 +93,7 @@ public class StationServiceImpl implements StationService {
     }
 
     @Override
+    @Cacheable(value = "StationServiceImpl.queryAll")
     public CommonResp<List<StationQueryResp>> queryAll() {
         StationExample stationExample = new StationExample();
         stationExample.setOrderByClause("name_py asc");
