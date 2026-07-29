@@ -118,14 +118,19 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
 
         RLock lock = null;
 
-        try {
-            lock = redissonClient.getLock(lockKey);
-            boolean isLock = lock.tryLock(0, TimeUnit.SECONDS);
 
-            if (!isLock) {
+            lock = redissonClient.getLock(lockKey);
+        boolean isLock = false;
+        try {
+            isLock = lock.tryLock(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (!isLock) {
                 throw new BusinessException(BusinessExpectionEnum.SERVICE_LOCK_ERROR);
             }
-
+        try {
             DateTime now = DateTime.now();
             Date date = req.getDate();
             String trainCode = req.getTrainCode();
@@ -197,9 +202,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             } catch (Exception e) {
                 throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
             }
-        } catch (InterruptedException e) {
-            log.error("余票不足：",e);
-        } finally {
+        }  finally {
             if (lock != null&&lock.isHeldByCurrentThread()) {
                 lock.unlock();
             }
