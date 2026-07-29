@@ -5,6 +5,22 @@ spring:
       port: 6379
       password: lyx040509
   cloud:
+    sentinel:
+      datasource:
+        flow:
+          nacos:
+            server-addr: localhost:8848 # nacos地址
+            dataId: sentinel
+            groupId: DEFAULT_GROUP
+            rule-type: flow
+      transport:
+        dashboard: localhost:18080
+        port: 8719
+
+#    sentinel:
+#      transport:
+#        dashboard: 127.0.0.1:18080
+#        port: 8719
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
@@ -13,6 +29,8 @@ spring:
         server-addr: 127.0.0.1:8848
         namespace: train
         file-extension: properties
+    openfeign:
+      lazy-attributes-resolution: true
   application:
     name: businessService
   cache:
@@ -41,5 +59,7 @@ seata:
       namespace: train
       username: nacos
       password: nacos
-
     type: nacos
+feign:
+  sentinel:
+    enabled: true

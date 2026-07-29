@@ -7,6 +7,8 @@ import cn.hutool.core.util.EnumUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -100,6 +102,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
         return new CommonResp<>();
     }
 
+
     @Override
     public CommonResp<Object> delete(String ids) {
         List<Long> list = Arrays.stream(ids.split(",")).map(Long::valueOf).toList();
@@ -111,7 +114,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
         }
         return new CommonResp<>();
     }
-
+    @SentinelResource(value = "doConfirm",blockHandler = "doConfirmError")
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
         String lockKey="lock:"+req.getTrainCode()+":"+req.getDate();
@@ -330,6 +333,10 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             return true;
         }
     }
+    private void doConfirmError(ConfirmOrderDoReq req, BlockException e){
+        throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
+    }
+
 }
 
 
