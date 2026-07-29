@@ -36,15 +36,15 @@ export default defineComponent({
 
     const columns = [
       { title: '姓名', dataIndex: 'passengerName', key: 'passengerName', width: 70 },
-      { title: '日期', dataIndex: 'date', key: 'date' },
+      { title: '日期', dataIndex: 'trainDate', key: 'trainDate' },
       { title: '车次', dataIndex: 'trainCode', key: 'trainCode', width: 70 },
-      { title: '出发站', dataIndex: 'start', key: 'start' },
+      { title: '出发站', dataIndex: 'startStation', key: 'startStation' },
       { title: '出发时间', dataIndex: 'startTime', key: 'startTime', width: 90 },
-      { title: '到达站', dataIndex: 'end', key: 'end' },
+      { title: '到达站', dataIndex: 'endStation', key: 'endStation' },
       { title: '到达时间', dataIndex: 'endTime', key: 'endTime', width: 90 },
       { title: '座位类型', dataIndex: 'seatType', key: 'seatType', width: 80, align: 'center' },
       { title: '车厢', dataIndex: 'carriageIndex', key: 'carriageIndex', width: 60, align: 'center' },
-      { title: '座位', dataIndex: 'row', key: 'row', width: 60, align: 'center' },
+      { title: '座位', dataIndex: 'seatRow', key: 'seatRow', width: 60, align: 'center' },
     ];
 
     const tablePagination = computed(() => ({ ...pagination.value, showSizeChanger: true, showQuickJumper: true, showTotal: (t) => `共 ${t} 条`, pageSizeOptions: ['5', '10', '20'] }));

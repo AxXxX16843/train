@@ -38,7 +38,8 @@ public class AdminConfirmOrderController {
 
     @PostMapping("do-confirm")
     public CommonResp<Object> doConfirm(@Valid @RequestBody ConfirmOrderDoReq req) {
-        return confirmOrderService.doConfirm(req);
+        confirmOrderService.doConfirm(req);
+        return new CommonResp<>();
     }
 
 }

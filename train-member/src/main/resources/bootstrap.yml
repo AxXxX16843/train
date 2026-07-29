@@ -22,3 +22,23 @@ spring:
       use-key-prefix: true
       cache-null-values: false
       time-to-live: 100s
+seata:
+  tx-service-group: train-group
+  config:
+    nacos:
+      group: SEATA_GROUP
+      server-addr: 127.0.0.1:8848
+      namespace: train
+      username: nacos
+      password: nacos
+      data-id: seataServer.properties
+    type: nacos
+  registry:
+    nacos:
+      application: seata-server
+      group: SEATA_GROUP
+      server-addr: 127.0.0.1:8848
+      namespace: train
+      username: nacos
+      password: nacos
+    type: nacos

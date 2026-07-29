@@ -26,13 +26,18 @@ import com.xzit.train.business.mapper.ConfirmOrderMapper;
 import com.xzit.train.business.resp.ConfirmOrderQueryResp;
 import com.xzit.train.business.service.ConfirmOrderService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.client.RedisClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
@@ -52,6 +57,13 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     private DailyTrainCarriageServiceImpl dailyTrainCarriageService;
     @Autowired
     private ConfirmOrderAfterServiceImpl confirmOrderAfterService;
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    private RedissonClient redissonClient;
+
 
 
 
@@ -101,73 +113,97 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     }
 
     @Override
-    public CommonResp<Object> doConfirm(ConfirmOrderDoReq req) {
-        DateTime now = DateTime.now();
-        Date date = req.getDate();
-        String trainCode = req.getTrainCode();
-        String endStation = req.getEndStation();
-        String startStation = req.getStartStation();
+    public void doConfirm(ConfirmOrderDoReq req) {
+        String lockKey="lock:"+req.getTrainCode()+":"+req.getDate();
 
-        ConfirmOrder confirmOrder = new ConfirmOrder();
-        confirmOrder.setId(SnowUtil.getSnowflakeNextId());
-        confirmOrder.setMemberId(MemberContext.getMember().getId());
-        confirmOrder.setDate(date);
-        confirmOrder.setTrainCode(trainCode);
-        confirmOrder.setStart(startStation);
-        confirmOrder.setEnd(endStation);
-        confirmOrder.setDailyTrainTicketId(req.getDailyTrainTicketId());
-        confirmOrder.setStatus(ConfirmOrderStatusEnum.INIT.getCode());
-        confirmOrder.setCreateTime(now);
-        confirmOrder.setUpdateTime(now);
-        List<ConfirmOrderTicketReq> tickets = req.getTickets();
-        confirmOrder.setTickets(JSON.toJSONString(tickets));
+        RLock lock = null;
 
-        confirmOrderMapper.insert(confirmOrder);
+        try {
+            lock = redissonClient.getLock(lockKey);
+            boolean isLock = lock.tryLock(0, TimeUnit.SECONDS);
 
-        DailyTrainTicket dailyTrainTicket = dailyTrainTicketService.selectTickets(trainCode, startStation, endStation, date);
+            if (!isLock) {
+                throw new BusinessException(BusinessExpectionEnum.SERVICE_LOCK_ERROR);
+            }
 
-        List<Integer> abIndexList = new ArrayList<>();
-        List<Integer> indexList = new ArrayList<>();
-        List<String> reqSeatList = new ArrayList<>();
-        List<DailyTrainSeat> fineSeatList = new ArrayList<>();
-        ConfirmOrderTicketReq ticket0 = tickets.get(0);
-        if (StrUtil.isNotBlank(ticket0.getSeat())) {
-            log.info("进行了选座");
-            List<SeatColEnum> colByType = SeatColEnum.getColByType(ticket0.getSeatType());
-            for (int i = 1; i <= 2; i++) {
-                for (SeatColEnum seatColEnum : colByType) {
-                    reqSeatList.add(i+ seatColEnum.getCode());
+            DateTime now = DateTime.now();
+            Date date = req.getDate();
+            String trainCode = req.getTrainCode();
+            String endStation = req.getEndStation();
+            String startStation = req.getStartStation();
+
+            ConfirmOrder confirmOrder = new ConfirmOrder();
+            confirmOrder.setId(SnowUtil.getSnowflakeNextId());
+            confirmOrder.setMemberId(MemberContext.getMember().getId());
+            confirmOrder.setDate(date);
+            confirmOrder.setTrainCode(trainCode);
+            confirmOrder.setStart(startStation);
+            confirmOrder.setEnd(endStation);
+            confirmOrder.setDailyTrainTicketId(req.getDailyTrainTicketId());
+            confirmOrder.setStatus(ConfirmOrderStatusEnum.INIT.getCode());
+            confirmOrder.setCreateTime(now);
+            confirmOrder.setUpdateTime(now);
+            List<ConfirmOrderTicketReq> tickets = req.getTickets();
+            confirmOrder.setTickets(JSON.toJSONString(tickets));
+
+            confirmOrderMapper.insert(confirmOrder);
+
+            DailyTrainTicket dailyTrainTicket = dailyTrainTicketService.selectTickets(trainCode, startStation, endStation, date);
+
+            reduceTicket(tickets, dailyTrainTicket);
+
+            List<Integer> abIndexList = new ArrayList<>();
+            List<Integer> indexList = new ArrayList<>();
+            List<String> reqSeatList = new ArrayList<>();
+            List<DailyTrainSeat> finalSeatList = new ArrayList<>();
+            ConfirmOrderTicketReq ticket0 = tickets.get(0);
+            if (StrUtil.isNotBlank(ticket0.getSeat())) {
+                log.info("进行了选座");
+                List<SeatColEnum> colByType = SeatColEnum.getColByType(ticket0.getSeatType());
+                for (int i = 1; i <= 2; i++) {
+                    for (SeatColEnum seatColEnum : colByType) {
+                        reqSeatList.add(i+ seatColEnum.getCode());
+                    }
+                }
+                log.info("前端传过来的参考选座数据：{}", reqSeatList);
+                for (ConfirmOrderTicketReq ticket : tickets) {
+                    int indexOf = reqSeatList.indexOf(ticket.getSeat());
+                    abIndexList.add(indexOf);
+                }
+                log.info("绝对偏移: {}", abIndexList);
+                Integer i = abIndexList.get(0);
+                for (Integer integer : abIndexList) {
+                    int abIndex = integer - i;
+                    indexList.add(abIndex);
+                }
+                log.info("得到偏移量:{}", indexList);
+
+                getSeat(finalSeatList,
+                        trainCode,
+                        date,
+                        ticket0.getSeatType(),
+                        ticket0.getSeat().split("")[1]
+                        , indexList
+                        ,dailyTrainTicket.getStartIndex(),dailyTrainTicket.getEndIndex());
+            } else {
+                for (ConfirmOrderTicketReq ticket : tickets) {
+                    getSeat(finalSeatList,trainCode, date, ticket.getSeatType(), null, null
+                            ,dailyTrainTicket.getStartIndex(),dailyTrainTicket.getEndIndex());
                 }
             }
-            log.info("前端传过来的参考选座数据：{}", reqSeatList);
-            for (ConfirmOrderTicketReq ticket : tickets) {
-                int indexOf = reqSeatList.indexOf(ticket.getSeat());
-                abIndexList.add(indexOf);
-            }
-            log.info("绝对偏移: {}", abIndexList);
-            Integer i = abIndexList.get(0);
-            for (Integer integer : abIndexList) {
-                int abIndex = integer - i;
-                indexList.add(abIndex);
-            }
-            log.info("得到偏移量:{}", indexList);
 
-            getSeat(fineSeatList,
-                    trainCode,
-                    date,
-                    ticket0.getSeatType(),
-                    ticket0.getSeat().split("")[1]
-                    , indexList
-                    ,dailyTrainTicket.getStartIndex(),dailyTrainTicket.getEndIndex());
-        } else {
-            for (ConfirmOrderTicketReq ticket : tickets) {
-                getSeat(fineSeatList,trainCode, date, ticket.getSeatType(), null, null
-                        ,dailyTrainTicket.getStartIndex(),dailyTrainTicket.getEndIndex());
+            try {
+                confirmOrderAfterService.updateSeat(dailyTrainTicket,finalSeatList,tickets,confirmOrder);
+            } catch (Exception e) {
+                throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
+            }
+        } catch (InterruptedException e) {
+            log.error("余票不足：",e);
+        } finally {
+            if (lock != null&&lock.isHeldByCurrentThread()) {
+                lock.unlock();
             }
         }
-        reduceTicket(tickets, dailyTrainTicket);
-        confirmOrderAfterService.updateSeat(dailyTrainTicket,fineSeatList,tickets,confirmOrder);
-        return new CommonResp<>();
     }
 
     private static void reduceTicket(List<ConfirmOrderTicketReq> tickets, DailyTrainTicket dailyTrainTicket) {

@@ -38,11 +38,11 @@ export default defineComponent({
     const columns = [
       { title: '会员ID', dataIndex: 'memberId', key: 'memberId', width: 140 },
       { title: '乘客ID', dataIndex: 'passengerId', key: 'passengerId', width: 140 },
-      { title: '日期', dataIndex: 'date', key: 'date' },
+      { title: '日期', dataIndex: 'trainDate', key: 'trainDate' },
       { title: '车次', dataIndex: 'trainCode', key: 'trainCode', width: 70 },
-      { title: '出发站', dataIndex: 'start', key: 'start' },
-      { title: '到达站', dataIndex: 'end', key: 'end' },
-      { title: '座位', dataIndex: 'row', key: 'row', width: 60 },
+      { title: '出发站', dataIndex: 'startStation', key: 'startStation' },
+      { title: '到达站', dataIndex: 'endStation', key: 'endStation' },
+      { title: '座位', dataIndex: 'seatRow', key: 'seatRow', width: 60 },
       { title: '座型', dataIndex: 'seatType', key: 'seatType', width: 80, align: 'center' },
       { title: '乘客', dataIndex: 'passengerName', key: 'passengerName' },
     ];

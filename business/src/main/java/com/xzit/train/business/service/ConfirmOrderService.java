@@ -19,6 +19,6 @@ public interface ConfirmOrderService {
 
     CommonResp<Object> delete(String ids);
 
-    CommonResp<Object> doConfirm(@Valid ConfirmOrderDoReq req);
+    void doConfirm(@Valid ConfirmOrderDoReq req);
 
 }

@@ -22,7 +22,7 @@ public class TicketSaveReq {
 
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     @NotNull(message = "【日期】不能为空")
-    private Date date;
+    private Date trainDate;
 
     @NotBlank(message = "【车次编号】不能为空")
     private String trainCode;
@@ -31,20 +31,20 @@ public class TicketSaveReq {
     private Integer carriageIndex;
 
     @NotBlank(message = "【排号】不能为空")
-    private String row;
+    private String seatRow;
 
     @NotBlank(message = "【列号】不能为空")
-    private String col;
+    private String seatCol;
 
     @NotBlank(message = "【出发站】不能为空")
-    private String start;
+    private String startStation;
 
     @JsonFormat(pattern = "HH:mm:ss",timezone = "GMT+8")
     @NotNull(message = "【出发时间】不能为空")
     private Date startTime;
 
     @NotBlank(message = "【到达站】不能为空")
-    private String end;
+    private String endStation;
 
     @JsonFormat(pattern = "HH:mm:ss",timezone = "GMT+8")
     @NotNull(message = "【到站时间】不能为空")

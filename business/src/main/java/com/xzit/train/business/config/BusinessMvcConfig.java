@@ -14,6 +14,6 @@ public class BusinessMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(memberLoginInterceptor).addPathPatterns("/**")
-                .excludePathPatterns("/business/hello");
+                .excludePathPatterns("/hello");
     }
 }

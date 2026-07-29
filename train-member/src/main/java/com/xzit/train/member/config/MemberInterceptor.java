@@ -16,8 +16,8 @@ public class MemberInterceptor implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(memberLoginInterceptor).addPathPatterns("/**")
-                .excludePathPatterns("/member/login",
-                        "/member/send-code",
-                        "/member/hello");
+                .excludePathPatterns("/login",
+                        "/send-code",
+                        "/hello");
     }
 }
