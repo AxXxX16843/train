@@ -1,5 +1,7 @@
 package com.xzit.train.business.service;
 
+import com.xzit.train.business.domain.ConfirmOrder;
+import com.xzit.train.business.dto.ConfirmOrderDto;
 import com.xzit.train.business.req.ConfirmOrderDoReq;
 import com.xzit.train.business.req.DailyTrainTicketQueryReq;
 import com.xzit.train.common.resp.CommonResp;
@@ -19,6 +21,9 @@ public interface ConfirmOrderService {
 
     CommonResp<Object> delete(String ids);
 
-    void doConfirm(@Valid ConfirmOrderDoReq req);
+    void doConfirm(@Valid ConfirmOrderDto dto);
 
+    CommonResp<Integer> queryRank(Long id);
+
+    CommonResp<Integer> cancelOrder(Long id);
 }

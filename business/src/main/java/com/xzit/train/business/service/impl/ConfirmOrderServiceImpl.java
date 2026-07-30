@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xzit.train.business.domain.*;
+import com.xzit.train.business.dto.ConfirmOrderDto;
 import com.xzit.train.business.enums.ConfirmOrderStatusEnum;
 import com.xzit.train.business.enums.SeatColEnum;
 import com.xzit.train.business.enums.SeatTypeEnum;
@@ -114,21 +115,107 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     }
     @SentinelResource(value = "doConfirm",blockHandler = "doConfirmError")
     @Override
-    public void doConfirm(ConfirmOrderDoReq req) {
-        String lockKey="train:lock:confirm:"+req.getTrainCode()+":"+req.getDate();
+    public void doConfirm(ConfirmOrderDto dto) {
+        String lockKey="train:lock:confirm:"+dto.getTrainCode()+":"+dto.getDate();
         RLock lock = null;
         lock = redissonClient.getLock(lockKey);
         boolean isLock = false;
         try {
-            isLock = lock.tryLock(2, TimeUnit.SECONDS);
+            isLock = lock.tryLock(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         if (!isLock) {
-            throw new BusinessException(BusinessExpectionEnum.SERVICE_LOCK_ERROR);
+            return;
         }
-
         try {
+            while (true){
+                ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
+                confirmOrderExample.createCriteria().andTrainCodeEqualTo(dto.getTrainCode())
+                        .andDateEqualTo(dto.getDate()).andStatusEqualTo(ConfirmOrderStatusEnum.INIT.getCode());
+                confirmOrderExample.setOrderByClause("id asc");
+                PageHelper.startPage(1,10);
+                List<ConfirmOrder> confirmOrders = confirmOrderMapper.selectByExampleWithBLOBs(confirmOrderExample);
+                if (confirmOrders.isEmpty()) {
+                    break;
+                }
+                for (ConfirmOrder confirmOrder : confirmOrders) {
+                    try {
+                        sell(confirmOrder);
+                    } catch (Exception e) {
+                        if(e instanceof BusinessException){
+                            log.info("余票不足，订单状态设为empty");
+                            confirmOrder.setStatus(ConfirmOrderStatusEnum.EMPTY.getCode());
+                            updateStatus(confirmOrder);
+                        }else {
+                            throw e;
+                        }
+                    }
+                }
+            }
+        }  finally {
+            if (lock != null&&lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
+        }
+    }
+
+    @Override
+    public CommonResp<Integer> queryRank(Long id) {
+
+        ConfirmOrder order = confirmOrderMapper.selectByPrimaryKey(id);
+        ConfirmOrderStatusEnum confirmOrderStatusEnum = EnumUtil.getBy(ConfirmOrderStatusEnum::getCode, order.getStatus());
+        int result=switch (confirmOrderStatusEnum){
+            case EMPTY -> -3;
+            case INIT -> 999;
+            case PENDING -> 0;
+            case CANCEL -> -2;
+            case FAILURE -> -4;
+            case SUCCESS -> -1;
+        };
+        if(result==999) {
+            ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
+            confirmOrderExample.or().andTrainCodeEqualTo(order.getTrainCode()).andDateEqualTo(order.getDate()).
+                    andStatusEqualTo(ConfirmOrderStatusEnum.INIT.getCode()).andCreateTimeLessThan(order.getCreateTime());
+            confirmOrderExample.or().andTrainCodeEqualTo(order.getTrainCode()).andDateEqualTo(order.getDate()).
+                    andStatusEqualTo(ConfirmOrderStatusEnum.PENDING.getCode()).andCreateTimeLessThan(order.getCreateTime());
+            return new CommonResp<>( Math.toIntExact(confirmOrderMapper.countByExample(confirmOrderExample)));
+        }else {
+            return new CommonResp<>( result);
+        }
+    }
+
+    @Override
+    public CommonResp<Integer> cancelOrder(Long id) {
+        ConfirmOrder confirmOrder = confirmOrderMapper.selectByPrimaryKey(id);
+        confirmOrder.setStatus(ConfirmOrderStatusEnum.CANCEL.getCode());
+        updateStatus(confirmOrder);
+        return new CommonResp<>(-2);
+    }
+
+    private void updateStatus(ConfirmOrder confirmOrder) {
+        ConfirmOrder confirmOrder1 = new ConfirmOrder();
+        confirmOrder1.setId(confirmOrder.getId());
+        confirmOrder1.setUpdateTime(DateTime.now());
+        confirmOrder1.setStatus(confirmOrder.getStatus());
+        confirmOrderMapper.updateByPrimaryKeySelective(confirmOrder1);
+    }
+
+    private void sell(ConfirmOrder confirmOrder) {
+
+        ConfirmOrderDoReq req = new ConfirmOrderDoReq();
+        req.setTrainCode(confirmOrder.getTrainCode());
+        req.setDate(confirmOrder.getDate());
+        req.setMemberId(confirmOrder.getMemberId());
+        req.setStartStation(confirmOrder.getStart());
+        req.setEndStation(confirmOrder.getEnd());
+        req.setDailyTrainTicketId(confirmOrder.getDailyTrainTicketId());
+        req.setTickets(JSON.parseArray(confirmOrder.getTickets(),ConfirmOrderTicketReq.class));
+
+        log.info("req：{}",req);
+        confirmOrder.setStatus(ConfirmOrderStatusEnum.PENDING.getCode());
+        updateStatus(confirmOrder);
+
             DateTime now = DateTime.now();
             Date date = req.getDate();
             String trainCode = req.getTrainCode();
@@ -136,11 +223,6 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             String startStation = req.getStartStation();
             List<ConfirmOrderTicketReq> tickets = req.getTickets();
 
-            ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
-            ConfirmOrderExample.Criteria criteria = confirmOrderExample.createCriteria();
-            criteria.andTrainCodeEqualTo(trainCode).andDateEqualTo(date).andMemberIdEqualTo(req.getMemberId());
-            List<ConfirmOrder> confirmOrders = confirmOrderMapper.selectByExampleWithBLOBs(confirmOrderExample);
-            ConfirmOrder confirmOrder = confirmOrders.get(0);
 
             DailyTrainTicket dailyTrainTicket = dailyTrainTicketService.selectTickets(trainCode, startStation, endStation, date);
 
@@ -191,12 +273,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             } catch (Exception e) {
                 throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
             }
-        }  finally {
-            if (lock != null&&lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
         }
-    }
 
     private static void reduceTicket(List<ConfirmOrderTicketReq> tickets, DailyTrainTicket dailyTrainTicket) {
         for (ConfirmOrderTicketReq ticket : tickets) {

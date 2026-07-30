@@ -3,6 +3,7 @@ package com.xzit.train.business.service.impl;
 import cn.hutool.core.date.DateTime;
 import com.alibaba.fastjson.JSON;
 import com.xzit.train.business.domain.ConfirmOrder;
+import com.xzit.train.business.dto.ConfirmOrderDto;
 import com.xzit.train.business.enums.ConfirmOrderStatusEnum;
 import com.xzit.train.business.enums.RocketMQTopicEnum;
 import com.xzit.train.business.mapper.ConfirmOrderMapper;
@@ -15,19 +16,16 @@ import com.xzit.train.common.exception.BusinessExpectionEnum;
 import com.xzit.train.common.util.SnowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class ConfirmOrderBeforeServiceImpl implements ConfirmOrderBeforeService {
-    @Autowired
-    private RedissonClient redissonClient;
+
 
     @Autowired
     private ConfirmOrderMapper confirmOrderMapper;
@@ -40,7 +38,7 @@ public class ConfirmOrderBeforeServiceImpl implements ConfirmOrderBeforeService 
 
 
     @Override
-    public void beforeOrder(ConfirmOrderDoReq req) {
+    public Long beforeOrder(ConfirmOrderDoReq req) {
         Long member = MemberContext.getMember().getId();
         req.setMemberId(member);
         boolean b = skTokenService.validToken(req.getTrainCode(), req.getDate(),member);
@@ -68,9 +66,14 @@ public class ConfirmOrderBeforeServiceImpl implements ConfirmOrderBeforeService 
         confirmOrder.setTickets(JSON.toJSONString(tickets));
 
         confirmOrderMapper.insert(confirmOrder);
-        String jsonString = JSON.toJSONString(req);
+        ConfirmOrderDto confirmOrderDto = new ConfirmOrderDto();
+        confirmOrderDto.setDate(date);
+        confirmOrderDto.setTrainCode(trainCode);
+        String jsonString = JSON.toJSONString(confirmOrderDto);
         rocketMQTemplate.convertAndSend(RocketMQTopicEnum.CONFIRM_ORDER.getCode(), jsonString);
         log.info("发送消息：{}", jsonString);
+
+        return confirmOrder.getId();
 
     }
 }

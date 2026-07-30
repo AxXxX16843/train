@@ -4,6 +4,6 @@ import com.xzit.train.business.req.ConfirmOrderDoReq;
 
 public interface ConfirmOrderBeforeService {
 
-    void beforeOrder(ConfirmOrderDoReq req);
+    Long beforeOrder(ConfirmOrderDoReq req);
 
 }

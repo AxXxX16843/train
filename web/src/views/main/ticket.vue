@@ -2,7 +2,7 @@
   <div class="ticket-page">
     <div class="ticket-toolbar">
       <div class="toolbar-left">
-        <a-date-picker v-model:value="searchDate" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 150px" />
+        <a-date-picker v-model:value="searchDate" placeholder="选择日期" value-format="YYYY-MM-DD" style="width: 150px" :disabled-date="disabledDate" />
         <a-select ref="sRef" v-model:value="searchStart" placeholder="始发站" show-search allowClear style="width: 160px; margin-left: 8px">
           <a-select-option v-for="s in stationList" :key="s.name" :value="s.name">{{ s.name }}</a-select-option>
         </a-select>
@@ -33,6 +33,7 @@
         </template>
         <template v-else-if="column.dataIndex === 'operation'">
           <a-button type="primary" size="small" @click="onBook(record)">预订</a-button>
+          <a-button size="small" style="margin-left:4px" @click="onShowStations(record)">途径</a-button>
         </template>
         <template v-else-if="column.dataIndex === 'duration'">
           {{ calcDuration(record.startTime, record.endTime) }}
@@ -55,6 +56,17 @@
         </div>
       </template>
     </a-table>
+
+    <!-- 途经车站 -->
+    <a-modal v-model:visible="stationVisible" :title="stationTrainCode + ' 途经车站'" :footer="null" width="700px">
+      <a-table :dataSource="stationData" :columns="stationColumns" :pagination="false" rowKey="index" size="small" :loading="stationLoading">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'inTime'">{{ formatTime(record.inTime) }}</template>
+          <template v-else-if="column.dataIndex === 'outTime'">{{ formatTime(record.outTime) }}</template>
+          <template v-else-if="column.dataIndex === 'stopTime'">{{ formatTime(record.stopTime) }}</template>
+        </template>
+      </a-table>
+    </a-modal>
   </div>
 </template>
 
@@ -81,6 +93,12 @@ export default defineComponent({
     const searchStart = ref();
     const searchEnd = ref();
     const expandedKeys = ref([]);
+    const disabledDate = (current) => {
+      const today = new Date(new Date().toDateString()).getTime();
+      const max = today + 15 * 24 * 3600 * 1000;
+      return current.valueOf() < today || current.valueOf() > max;
+    };
+
     const colIsTicket = (key) => TICKET_COLS.includes(key);
 
     const calcDuration = (startTime, endTime) => {
@@ -120,6 +138,30 @@ export default defineComponent({
 
     const handleTableChange = (page) => { pagination.value.pageSize = page.pageSize; handleQuery({ page: page.current, size: page.pageSize }); };
 
+    const stationVisible = ref(false);
+    const stationTrainCode = ref('');
+    const stationData = ref([]);
+    const stationLoading = ref(false);
+    const stationColumns = [
+      { title: '序号', dataIndex: 'index', width: 50, align: 'center' },
+      { title: '站名', dataIndex: 'name' },
+      { title: '进站时间', dataIndex: 'inTime', width: 90, align: 'center' },
+      { title: '出站时间', dataIndex: 'outTime', width: 90, align: 'center' },
+      { title: '停留时长', dataIndex: 'stopTime', width: 90, align: 'center' },
+    ];
+    const formatTime = (t) => t ? t.substring(0,8) : '—';
+
+    const onShowStations = (record) => {
+      stationTrainCode.value = record.trainCode;
+      stationVisible.value = true;
+      stationLoading.value = true;
+      axios.get('/business/admin/train-station/query-list', {
+        params: { trainCode: record.trainCode, page: 1, size: 100 }
+      }).then(res => {
+        if (res.data.success) { stationData.value = res.data.content.list || []; }
+      }).finally(() => { stationLoading.value = false; });
+    };
+
     const onBook = (record) => {
       router.push({ path: '/order', query: { d: encodeURIComponent(JSON.stringify(record)) } });
     };
@@ -137,7 +179,8 @@ export default defineComponent({
     });
 
     return {
-      list, columns, pagination, tablePagination, stationList, searchDate, searchStart, searchEnd, expandedKeys, colIsTicket, calcDuration,
+      list, columns, pagination, tablePagination, stationList, searchDate, searchStart, searchEnd, expandedKeys, disabledDate, colIsTicket, calcDuration,
+      stationVisible, stationTrainCode, stationData, stationColumns, stationLoading, formatTime, onShowStations,
       handleQuery, handleTableChange, onQueryClick, onBook,
     };
   },

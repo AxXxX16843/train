@@ -116,6 +116,17 @@
         </div>
       </template>
     </a-modal>
+
+    <!-- 排队中 -->
+    <a-modal v-model:visible="queueVisible" :title="queueStatus >= 0 ? '排队中' : '处理结果'" :footer="null" :closable="queueStatus < 0" :maskClosable="false" width="400px">
+      <div style="text-align:center;padding:20px 0">
+        <a-spin v-if="queueStatus >= 0" size="large" />
+        <div style="font-size:24px" v-if="queueStatus < 0">{{ STATUS_MAP[String(queueStatus)]?.icon || '' }}</div>
+        <div style="font-size:16px;margin-top:12px">{{ queueMsg }}</div>
+        <div style="color:#bbb;margin-top:12px;font-size:12px">订单号：{{ queueOrderId }}</div>
+        <a-button v-if="queueStatus >= 0" danger style="margin-top:16px" @click="onCancelQueue">取消排队</a-button>
+      </div>
+    </a-modal>
   </div>
   <div v-else class="order-empty">
     <a-empty description="暂无车票信息" />
@@ -123,7 +134,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { notification } from 'ant-design-vue';
@@ -262,7 +273,17 @@ export default defineComponent({
     });
     const secondAisle = computed(() => -1);
 
+    const queueVisible = ref(false);
+    const queueStatus = ref(0);
+    const queueOrderId = ref('');
+    const queueMsg = ref('');
+    let queueTimer = null;
+
     const onConfirmOk = () => {
+      confirmVisible.value = false;
+      queueVisible.value = true;
+      queueStatus.value = 1;
+      queueMsg.value = '正在提交订单...';
       const useSeat = canSelectSeat.value && showSeatSelect.value;
       const source = useSeat ? seatItems.value : orderItems.value;
       axios.post('/business/admin/confirm-order/do-confirm', {
@@ -283,13 +304,64 @@ export default defineComponent({
         })),
       }).then(res => {
         if (res.data.success) {
-          notification.success({ description: '下单成功！' });
-          confirmVisible.value = false;
+          const orderId = res.data.content;
+          if (!orderId || orderId === '0') { queueVisible.value = false; return; }
+          queueOrderId.value = orderId;
+          startPolling(orderId);
         } else {
           notification.error({ description: res.data.message });
+          queueVisible.value = false;
         }
       });
     };
+
+    const STATUS_MAP = {
+      '-4': { text: '订单处理失败', icon: '❌', color: '#ff4d4f' },
+      '-3': { text: '很遗憾，余票不足', icon: '😔', color: '#faad14' },
+      '-2': { text: '订单已取消', icon: '🚫', color: '#999' },
+      '-1': { text: '下单成功！', icon: '✅', color: '#52c41a' },
+      '0': { text: '正在处理中...', icon: '🔄', color: '#1677ff' },
+    };
+
+    const onCancelQueue = () => {
+      if (!queueOrderId.value) return;
+      axios.post('/business/admin/confirm-order/cancel-order/' + queueOrderId.value).then(res => {
+        if (res.data.success) {
+          if (queueTimer) clearInterval(queueTimer);
+          queueStatus.value = -2;
+          queueMsg.value = STATUS_MAP['-2'].text;
+          setTimeout(() => { queueVisible.value = false; }, 1500);
+        }
+      }).catch(() => {});
+    };
+
+    const startPolling = (orderId) => {
+      if (queueTimer) clearInterval(queueTimer);
+      const poll = () => {
+        axios.get('/business/admin/confirm-order/query-rank/' + orderId).then(res => {
+          if (res.data.success) {
+            const val = res.data.content;
+            queueStatus.value = val;
+            if (val > 0) {
+              queueMsg.value = '前面还有 ' + val + ' 个订单';
+            } else {
+              const info = STATUS_MAP[String(val)];
+              if (info) {
+                queueMsg.value = info.text;
+                if (val < 0) {
+                  clearInterval(queueTimer);
+                  setTimeout(() => { queueVisible.value = false; }, 2000);
+                }
+              }
+            }
+          }
+        }).catch(() => {});
+      };
+      poll();
+      queueTimer = setInterval(poll, 1000);
+    };
+
+    onUnmounted(() => { if (queueTimer) clearInterval(queueTimer); });
 
     onMounted(() => {
       const raw = route.query.d;
@@ -304,7 +376,7 @@ export default defineComponent({
     return { ticket, passengers, selectedKeys, orderItems, availSeats, seatRemain, seatPrice, calcDuration,
       confirmVisible, showSeatSelect, seatItems, seatCols, seatRefRows, pickIdx, canSelectSeat, firstAisle, secondAisle, SEAT_MAP,
       onSeatRefClick,
-      PASSENGER_TYPES, formatDate, dayOfWeek, onPassengerChange, onShowConfirm, onConfirmOk };
+      queueVisible, queueStatus, queueOrderId, queueMsg, STATUS_MAP, onCancelQueue, PASSENGER_TYPES, formatDate, dayOfWeek, onPassengerChange, onShowConfirm, onConfirmOk };
   },
 });
 </script>

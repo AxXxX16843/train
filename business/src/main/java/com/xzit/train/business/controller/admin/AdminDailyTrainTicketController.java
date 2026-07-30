@@ -1,5 +1,7 @@
 package com.xzit.train.business.controller.admin;
 
+import com.xzit.train.business.domain.DailyTrainTicket;
+import com.xzit.train.business.domain.TrainStation;
 import com.xzit.train.common.feign.MemberFeignClient;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
@@ -10,6 +12,8 @@ import com.xzit.train.business.service.DailyTrainTicketService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/admin/daily-train-ticket")
@@ -42,6 +46,10 @@ public class AdminDailyTrainTicketController {
     public CommonResp<PageResp> ticketList(@RequestParam(defaultValue = "1") Integer page,
                                            @RequestParam(defaultValue = "10") Integer size) {
         return memberFeignClient.ticketList(page, size);
+    }
+    @GetMapping("/query-station")
+    public CommonResp<List<TrainStation>> queryStation(DailyTrainTicket req) {
+        return dailyTrainTicketService.queryStation(req);
     }
 
 }

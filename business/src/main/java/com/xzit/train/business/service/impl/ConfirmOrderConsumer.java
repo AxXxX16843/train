@@ -2,6 +2,7 @@ package com.xzit.train.business.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.xzit.train.business.domain.ConfirmOrder;
+import com.xzit.train.business.dto.ConfirmOrderDto;
 import com.xzit.train.business.req.ConfirmOrderDoReq;
 import com.xzit.train.business.service.ConfirmOrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class ConfirmOrderConsumer implements RocketMQListener<MessageExt> {
     public void onMessage(MessageExt messageExt) {
         byte[] body = messageExt.getBody();
         log.info("接收到消息:{}", new String(body));
-        ConfirmOrderDoReq req = JSON.parseObject(new String(body), ConfirmOrderDoReq.class);
-        confirmOrderService.doConfirm(req);
+        ConfirmOrderDto dto = JSON.parseObject(new String(body), ConfirmOrderDto.class);
+        confirmOrderService.doConfirm(dto);
     }
 }

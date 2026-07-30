@@ -12,11 +12,10 @@ import com.xzit.train.business.req.ConfirmOrderTicketReq;
 import com.xzit.train.common.feign.MemberFeignClient;
 import com.xzit.train.common.req.TicketSaveReq;
 import com.xzit.train.common.util.SnowUtil;
-import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Date;
 import java.util.List;
@@ -98,8 +97,6 @@ public class ConfirmOrderAfterServiceImpl {
             ticketSaveReq.setCreateTime(now);
             ticketSaveReq.setUpdateTime(now);
             memberFeignClient.save(ticketSaveReq);
-
-
             ConfirmOrder confirmOrderFinal = new ConfirmOrder();
             confirmOrderFinal.setId(confirmOrder.getId());
             confirmOrderFinal.setStatus(ConfirmOrderStatusEnum.SUCCESS.getCode());

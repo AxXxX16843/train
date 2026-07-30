@@ -1,5 +1,6 @@
 package com.xzit.train.business.controller.admin;
 
+import com.xzit.train.business.domain.ConfirmOrder;
 import com.xzit.train.business.req.ConfirmOrderDoReq;
 import com.xzit.train.business.req.DailyTrainTicketQueryReq;
 import com.xzit.train.business.service.ConfirmOrderBeforeService;
@@ -41,8 +42,16 @@ public class AdminConfirmOrderController {
 
     @PostMapping("do-confirm")
     public CommonResp<Object> doConfirm(@Valid @RequestBody ConfirmOrderDoReq req) {
-        confirmOrderBeforeService.beforeOrder(req);
-        return new CommonResp<>();
+        Long l = confirmOrderBeforeService.beforeOrder(req);
+        return new CommonResp<>(String.valueOf(l));
+    }
+    @GetMapping("/query-rank/{id}")
+    public CommonResp<Integer> queryRank(@PathVariable("id") Long id) {
+        return confirmOrderService.queryRank(id);
+    }
+    @PostMapping("/cancel-order/{id}")
+    public CommonResp<Integer> cancelOrder(@PathVariable("id") Long id) {
+        return confirmOrderService.cancelOrder(id);
     }
 
 }

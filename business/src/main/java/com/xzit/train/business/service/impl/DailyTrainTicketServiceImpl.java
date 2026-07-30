@@ -38,6 +38,8 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
     private DailyTrainSeatServiceImpl dailyTrainSeatService;
 
 
+
+
     @Override
     public CommonResp<Object> save(DailyTrainTicketSaveReq req) {
         DateTime now = DateTime.now();
@@ -163,7 +165,18 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
                 return null;
             }
         }
+
+    @Override
+    public CommonResp<List<TrainStation>> queryStation(DailyTrainTicket dailyTrainTicket) {
+
+        TrainStationExample trainStationExample = new TrainStationExample();
+        TrainStationExample.Criteria criteria = trainStationExample.createCriteria();
+        criteria.andTrainCodeEqualTo(dailyTrainTicket.getTrainCode())
+                .andIndexBetween(dailyTrainTicket.getStartIndex(), dailyTrainTicket.getEndIndex());
+        List<TrainStation> trainStations = trainStationMapper.selectByExample(trainStationExample);
+        return new CommonResp<>(trainStations);
     }
+}
 
 
 

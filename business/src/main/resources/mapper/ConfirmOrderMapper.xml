@@ -97,7 +97,7 @@
       order by ${orderByClause}
     </if>
   </select>
-  <select id="selectByExample" parameterType="com.xzit.train.business.domain.ConfirmOrderExample" resultMap="BaseResultMap">
+  <select id="selectByExample" parameterType="com.xzit.train.business.domain.ConfirmOrderExample" resultMap="ResultMapWithBLOBs">
     select
     <if test="distinct">
       distinct
