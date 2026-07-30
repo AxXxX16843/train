@@ -18,6 +18,7 @@ import com.xzit.train.business.enums.SeatColEnum;
 import com.xzit.train.business.enums.SeatTypeEnum;
 import com.xzit.train.business.req.*;
 import com.xzit.train.business.service.DailyTrainTicketService;
+import com.xzit.train.business.service.SkTokenService;
 import com.xzit.train.common.context.MemberContext;
 import com.xzit.train.common.exception.BusinessException;
 import com.xzit.train.common.exception.BusinessExpectionEnum;
@@ -59,13 +60,6 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     private DailyTrainCarriageServiceImpl dailyTrainCarriageService;
     @Autowired
     private ConfirmOrderAfterServiceImpl confirmOrderAfterService;
-
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
-    private RedissonClient redissonClient;
-
 
 
 
@@ -117,22 +111,7 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     @SentinelResource(value = "doConfirm",blockHandler = "doConfirmError")
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
-        String lockKey="lock:"+req.getTrainCode()+":"+req.getDate();
 
-        RLock lock = null;
-
-
-            lock = redissonClient.getLock(lockKey);
-        boolean isLock = false;
-        try {
-            isLock = lock.tryLock(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (!isLock) {
-                throw new BusinessException(BusinessExpectionEnum.SERVICE_LOCK_ERROR);
-            }
         try {
             DateTime now = DateTime.now();
             Date date = req.getDate();
@@ -206,9 +185,9 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                 throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
             }
         }  finally {
-            if (lock != null&&lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
+//            if (lock != null&&lock.isHeldByCurrentThread()) {
+//                lock.unlock();
+//            }
         }
     }
 

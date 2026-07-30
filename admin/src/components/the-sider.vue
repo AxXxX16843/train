@@ -52,6 +52,9 @@
         <a-menu-item key="/ticket-manage">
           <router-link to="/ticket-manage">车票管理</router-link>
         </a-menu-item>
+        <a-menu-item key="/token">
+          <router-link to="/token">令牌余量</router-link>
+        </a-menu-item>
       </a-sub-menu>
       <a-sub-menu key="batch">
         <template #title>

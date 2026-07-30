@@ -130,4 +130,5 @@ public class TrainSeatServiceImpl implements TrainSeatService {
         }
         return new CommonResp<>();
     }
+
 }

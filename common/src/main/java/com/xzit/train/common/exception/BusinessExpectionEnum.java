@@ -15,7 +15,8 @@ public enum BusinessExpectionEnum {
     TYPE_IS_EMPTY("没有这种类型的车次"),
     TICKET_COUNT_ERROR("余票不足"),
     SERVICE_ERROR("服务器忙请稍后重试")
-    ,SERVICE_LOCK_ERROR("系统繁忙，请稍后重试");
+    ,SERVICE_LOCK_ERROR("系统繁忙，请稍后重试"),
+    DO_ERROR("系统繁忙,请勿重复刷新界面");
     private String desc;
 
     public String getDesc() {

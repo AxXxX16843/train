@@ -49,6 +49,9 @@ const routes = [
     },{
       path: 'ticket-manage',
       component: () => import('../views/main/ticket-manage.vue'),
+    },{
+      path: 'token',
+      component: () => import('../views/main/token.vue'),
     },]
   }
 ]

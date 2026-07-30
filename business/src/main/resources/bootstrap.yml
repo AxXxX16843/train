@@ -63,3 +63,7 @@ seata:
 feign:
   sentinel:
     enabled: true
+rocketmq:
+  name-server: http://localhost:9876
+  producer:
+    group: default

@@ -53,6 +53,9 @@ public class DailyTrainServiceImpl implements DailyTrainService {
     @Autowired
     private DailyTrainTicketService dailyTrainTicketService;
 
+    @Autowired
+    private SkTokenService skTokenService;
+
 
     @Override
     @CacheEvict(value = "DailyTrainServiceImpl.queryList", allEntries = true)
@@ -160,7 +163,8 @@ public class DailyTrainServiceImpl implements DailyTrainService {
             throw new BusinessException(BusinessExpectionEnum.TYPE_IS_EMPTY);
         }
         dailyTrainTicketService.genDailyTicket(train.getCode(), date,trainType);
-
+        log.info("生成令牌");
+        skTokenService.genDaily(train.getCode(),date);
     }
 }
 

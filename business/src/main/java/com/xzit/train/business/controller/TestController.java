@@ -11,12 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class TestController {
 
-    @Autowired
-    private MemberFeignClient memberFeignClient;
-
-    @SentinelResource("hello")
     @GetMapping("/hello")
     public String hello() {
-        return memberFeignClient.hello();
+        return "kskbl";
     }
 }
