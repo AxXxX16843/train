@@ -2,7 +2,6 @@ package com.xzit.train.business.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import com.xzit.train.business.domain.ConfirmOrder;
-import com.xzit.train.business.domain.ConfirmOrderExample;
 import com.xzit.train.business.domain.DailyTrainSeat;
 import com.xzit.train.business.domain.DailyTrainTicket;
 import com.xzit.train.business.enums.ConfirmOrderStatusEnum;
@@ -10,7 +9,6 @@ import com.xzit.train.business.mapper.ConfirmOrderMapper;
 import com.xzit.train.business.mapper.DailyTrainSeatMapper;
 import com.xzit.train.business.mapper.cust.ConfirmOrderCustMapper;
 import com.xzit.train.business.req.ConfirmOrderTicketReq;
-import com.xzit.train.common.context.MemberContext;
 import com.xzit.train.common.feign.MemberFeignClient;
 import com.xzit.train.common.req.TicketSaveReq;
 import com.xzit.train.common.util.SnowUtil;
@@ -84,7 +82,7 @@ public class ConfirmOrderAfterServiceImpl {
             DateTime now = DateTime.now();
             TicketSaveReq ticketSaveReq = new TicketSaveReq();
             ticketSaveReq.setId(SnowUtil.getSnowflakeNextId());
-            ticketSaveReq.setMemberId(MemberContext.getMember().getId());
+            ticketSaveReq.setMemberId(confirmOrder.getMemberId());
             ticketSaveReq.setPassengerId(tickets.get(j).getPassengerId());
             ticketSaveReq.setPassengerName(tickets.get(j).getPassengerName());
             ticketSaveReq.setTrainDate(dailyTrainTicket.getDate());

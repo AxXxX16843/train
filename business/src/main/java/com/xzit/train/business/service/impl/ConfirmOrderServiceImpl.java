@@ -47,6 +47,10 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ConfirmOrderServiceImpl implements ConfirmOrderService {
 
+
+    @Autowired
+    private RedissonClient redissonClient;
+
     @Autowired
     private ConfirmOrderMapper confirmOrderMapper;
 
@@ -111,6 +115,18 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
     @SentinelResource(value = "doConfirm",blockHandler = "doConfirmError")
     @Override
     public void doConfirm(ConfirmOrderDoReq req) {
+        String lockKey="train:lock:confirm:"+req.getTrainCode()+":"+req.getDate();
+        RLock lock = null;
+        lock = redissonClient.getLock(lockKey);
+        boolean isLock = false;
+        try {
+            isLock = lock.tryLock(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if (!isLock) {
+            throw new BusinessException(BusinessExpectionEnum.SERVICE_LOCK_ERROR);
+        }
 
         try {
             DateTime now = DateTime.now();
@@ -118,22 +134,13 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
             String trainCode = req.getTrainCode();
             String endStation = req.getEndStation();
             String startStation = req.getStartStation();
-
-            ConfirmOrder confirmOrder = new ConfirmOrder();
-            confirmOrder.setId(SnowUtil.getSnowflakeNextId());
-            confirmOrder.setMemberId(MemberContext.getMember().getId());
-            confirmOrder.setDate(date);
-            confirmOrder.setTrainCode(trainCode);
-            confirmOrder.setStart(startStation);
-            confirmOrder.setEnd(endStation);
-            confirmOrder.setDailyTrainTicketId(req.getDailyTrainTicketId());
-            confirmOrder.setStatus(ConfirmOrderStatusEnum.INIT.getCode());
-            confirmOrder.setCreateTime(now);
-            confirmOrder.setUpdateTime(now);
             List<ConfirmOrderTicketReq> tickets = req.getTickets();
-            confirmOrder.setTickets(JSON.toJSONString(tickets));
 
-            confirmOrderMapper.insert(confirmOrder);
+            ConfirmOrderExample confirmOrderExample = new ConfirmOrderExample();
+            ConfirmOrderExample.Criteria criteria = confirmOrderExample.createCriteria();
+            criteria.andTrainCodeEqualTo(trainCode).andDateEqualTo(date).andMemberIdEqualTo(req.getMemberId());
+            List<ConfirmOrder> confirmOrders = confirmOrderMapper.selectByExampleWithBLOBs(confirmOrderExample);
+            ConfirmOrder confirmOrder = confirmOrders.get(0);
 
             DailyTrainTicket dailyTrainTicket = dailyTrainTicketService.selectTickets(trainCode, startStation, endStation, date);
 
@@ -185,9 +192,9 @@ public class ConfirmOrderServiceImpl implements ConfirmOrderService {
                 throw new BusinessException(BusinessExpectionEnum.SERVICE_ERROR);
             }
         }  finally {
-//            if (lock != null&&lock.isHeldByCurrentThread()) {
-//                lock.unlock();
-//            }
+            if (lock != null&&lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 

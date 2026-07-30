@@ -2,6 +2,7 @@ package com.xzit.train.business.controller.admin;
 
 import com.xzit.train.business.req.ConfirmOrderDoReq;
 import com.xzit.train.business.req.DailyTrainTicketQueryReq;
+import com.xzit.train.business.service.ConfirmOrderBeforeService;
 import com.xzit.train.common.resp.CommonResp;
 import com.xzit.train.common.resp.PageResp;
 import com.xzit.train.business.req.ConfirmOrderQueryReq;
@@ -18,6 +19,8 @@ public class AdminConfirmOrderController {
 
     @Autowired
     private ConfirmOrderService confirmOrderService;
+    @Autowired
+    private ConfirmOrderBeforeService confirmOrderBeforeService;
 
     @PostMapping("save")
     public CommonResp<Object> save(@Valid @RequestBody ConfirmOrderSaveReq req) {
@@ -38,7 +41,7 @@ public class AdminConfirmOrderController {
 
     @PostMapping("do-confirm")
     public CommonResp<Object> doConfirm(@Valid @RequestBody ConfirmOrderDoReq req) {
-        confirmOrderService.doConfirm(req);
+        confirmOrderBeforeService.beforeOrder(req);
         return new CommonResp<>();
     }
 

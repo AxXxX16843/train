@@ -13,6 +13,8 @@ import java.util.List;
 @Data
 public class ConfirmOrderDoReq extends PageReq {
 
+    private Long memberId;
+
     private String trainCode;
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date date;
