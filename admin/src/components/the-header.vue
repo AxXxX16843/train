@@ -32,19 +32,12 @@ export default defineComponent({
 
 <style scoped>
 .header {
-  display: flex;
-  align-items: center;
-  padding: 0 24px 0 0;
+  display: flex; align-items: center; padding: 0 24px 0 0;
+  background: linear-gradient(135deg, #001529, #003a70) !important;
 }
+.header :deep(.ant-menu-dark) { background: transparent; }
 .logo {
-  width: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 17px;
-  font-weight: 600;
-  color: #fff;
-  flex-shrink: 0;
+  width: 200px; display: flex; align-items: center; justify-content: center;
+  gap: 8px; font-size: 17px; font-weight: 600; color: #fff; flex-shrink: 0;
 }
 </style>

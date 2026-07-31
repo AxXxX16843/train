@@ -48,7 +48,7 @@ public class AdminDailyTrainTicketController {
         return memberFeignClient.ticketList(page, size);
     }
     @GetMapping("/query-station")
-    public CommonResp<List<TrainStation>> queryStation(DailyTrainTicket req) {
+    public CommonResp<List<TrainStation>> queryStation(@Valid DailyTrainTicket req) {
         return dailyTrainTicketService.queryStation(req);
     }
 

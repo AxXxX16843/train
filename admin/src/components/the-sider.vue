@@ -88,16 +88,14 @@ export default defineComponent({
 .sider {
   background: #fff;
   border-right: 1px solid #f0f0f0;
+  box-shadow: 2px 0 8px rgba(0,0,0,.04);
 }
 .sider-title {
-  height: 64px;
-  line-height: 64px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: bold;
-  color: #001529;
+  height: 64px; line-height: 64px; text-align: center;
+  font-size: 16px; font-weight: 700; color: #001529;
   border-bottom: 1px solid #f0f0f0;
-  overflow: hidden;
-  white-space: nowrap;
+  overflow: hidden; white-space: nowrap;
+  background: linear-gradient(135deg, #f6f8fa, #eef2f7);
 }
+:deep(.ant-menu-item-selected) { background: #e6f4ff !important; color: #1677ff !important; border-radius: 0; }
 </style>

@@ -60,7 +60,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   padding: 0 24px;
+  background: linear-gradient(135deg, #001529, #003a70) !important;
 }
+.header :deep(.ant-menu-dark) { background: transparent; }
 .header-right {
   margin-left: auto;
   color: rgba(255, 255, 255, 0.85);

@@ -71,7 +71,13 @@ export default defineComponent({
 
 <style scoped>
 .mt-page { width: 100%; }
-.mt-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.mt-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; margin-bottom: 16px;
+  background: #fafafa; border-radius: 10px; border: 1px solid #f0f0f0;
+}
 .total-tip { color: #8c8c8c; font-size: 13px; }
-:deep(.ant-table-pagination) { justify-content: center !important; }
+:deep(.ant-table) { border-radius: 10px; overflow: hidden; }
+:deep(.ant-table-pagination) { justify-content: center !important; padding: 16px 0; }
+:deep(.ant-tag) { border-radius: 6px; }
 </style>

@@ -104,20 +104,28 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
 }
 .login-card {
   width: 400px;
-  padding: 40px;
+  padding: 44px 40px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
 }
 .login-title {
   text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 32px;
-  color: #333;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a1a1a;
 }
+.login-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 32px;
+}
+.login-card :deep(.ant-btn-primary) { border-radius: 8px; height: 42px; font-size: 15px; }
+.login-card :deep(.ant-input-affix-wrapper) { border-radius: 8px; }
 </style>

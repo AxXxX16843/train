@@ -17,6 +17,7 @@ import com.xzit.train.business.req.DailyTrainTicketQueryReq;
 import com.xzit.train.business.req.DailyTrainTicketSaveReq;
 import com.xzit.train.business.resp.DailyTrainTicketQueryResp;
 import com.xzit.train.business.service.DailyTrainTicketService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service
 public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
 
@@ -174,6 +176,7 @@ public class DailyTrainTicketServiceImpl implements DailyTrainTicketService {
         criteria.andTrainCodeEqualTo(dailyTrainTicket.getTrainCode())
                 .andIndexBetween(dailyTrainTicket.getStartIndex(), dailyTrainTicket.getEndIndex());
         List<TrainStation> trainStations = trainStationMapper.selectByExample(trainStationExample);
+        log.info("途径车站：{}", trainStations);
         return new CommonResp<>(trainStations);
     }
 }

@@ -383,9 +383,10 @@ export default defineComponent({
 
 <style scoped>
 .order-page { padding: 24px; max-width: 960px; margin: 0 auto; }
-.order-card { border-radius: 12px; }
-:deep(.ant-card-head) { background: #fafafa; }
-.order-card { border-radius: 12px; }
+.order-card { border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+:deep(.ant-card-head) { background: #fafafa; border-radius: 14px 14px 0 0; }
+:deep(.ant-btn-primary) { border-radius: 8px; }
+:deep(.ant-modal-content) { border-radius: 14px; }
 
 /* 车次头部 */
 .train-header { text-align: center; padding: 4px 0; }

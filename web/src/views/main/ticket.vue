@@ -149,16 +149,16 @@ export default defineComponent({
       { title: '出站时间', dataIndex: 'outTime', width: 90, align: 'center' },
       { title: '停留时长', dataIndex: 'stopTime', width: 90, align: 'center' },
     ];
-    const formatTime = (t) => t ? t.substring(0,8) : '—';
+    const formatTime = (t) => t || '—';
 
     const onShowStations = (record) => {
       stationTrainCode.value = record.trainCode;
       stationVisible.value = true;
       stationLoading.value = true;
-      axios.get('/business/admin/train-station/query-list', {
-        params: { trainCode: record.trainCode, page: 1, size: 100 }
+      axios.get('/business/admin/daily-train-ticket/query-station', {
+        params: { trainCode: record.trainCode, date: record.date, startIndex: record.startIndex, endIndex: record.endIndex }
       }).then(res => {
-        if (res.data.success) { stationData.value = res.data.content.list || []; }
+        if (res.data.success) { stationData.value = res.data.content || []; }
       }).finally(() => { stationLoading.value = false; });
     };
 
@@ -189,14 +189,22 @@ export default defineComponent({
 
 <style scoped>
 .ticket-page { width: 100%; }
-.ticket-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.ticket-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; margin-bottom: 16px;
+  background: #fafafa; border-radius: 10px; border: 1px solid #f0f0f0;
+}
 .total-tip { color: #8c8c8c; font-size: 13px; }
-:deep(.ant-table-pagination) { justify-content: center !important; }
-.price-row { display: flex; align-items: center; padding: 8px 16px; }
+:deep(.ant-table) { border-radius: 10px; overflow: hidden; }
+:deep(.ant-table-pagination) { justify-content: center !important; padding: 16px 0; }
+.price-row { display: flex; align-items: center; padding: 10px 20px; }
 .price-label { font-weight: 600; color: #333; margin-right: 16px; flex-shrink: 0; }
 .price-list { display: flex; gap: 24px; }
 .price-list span { font-weight: 600; }
 .merge-col { line-height: 2; }
-.start-label { background: #52c41a; color: #fff; font-size: 12px; padding: 0 4px; border-radius: 2px; margin-right: 4px; }
-.end-label { background: #faad14; color: #fff; font-size: 12px; padding: 0 4px; border-radius: 2px; margin-right: 4px; }
+.start-label { background: #1677ff; color: #fff; font-size: 11px; padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+.end-label { background: #ff7a45; color: #fff; font-size: 11px; padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+:deep(.ant-btn-primary) { border-radius: 6px; }
+:deep(.ant-tag-green) { background: #f6ffed; border-color: #b7eb8f; color: #389e0d; border-radius: 6px; }
+:deep(.ant-tag) { border-radius: 6px; }
 </style>

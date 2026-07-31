@@ -1,5 +1,8 @@
 package com.xzit.train.business.domain;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -14,10 +17,13 @@ public class TrainStation {
 
     private String namePinyin;
 
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date inTime;
 
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date outTime;
 
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date stopTime;
 
     private BigDecimal km;
